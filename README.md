@@ -1,5 +1,17 @@
 # AllanBot-Public
-Snippets of code used in AllanBot. The code here is pasted and modified at the time it was finished, and may not necessarily be updated for bug fixes; these are just samples.
+
+This is a node.js module that contains helper functions used in AllanBot.
+To use this, either install the module via
+
+`npm install 'allanbot'`
+
+or add the following to your package.json dependency:
+
+`"allanbot": "git://github.com/asdfasdfvful/AllanBot-Public"`
+
+All the bot features may be accessed after the following in your js file:
+
+`var allanbot = require('allanbot');`
 
 The bot uses the unofficial [facebook-chat-api](https://github.com/Schmavery/facebook-chat-api), as well as [firebase](https://www.firebase.com/) among other things.
 
