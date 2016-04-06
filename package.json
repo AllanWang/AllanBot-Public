@@ -1,0 +1,14 @@
+{
+  "name": "allanbot",
+  "version": "0.0.1",
+  "dependencies": {
+    "facebook-chat-api": "git://github.com/schmavery/facebook-chat-api",
+    "mitsuku-api": "git://github.com/eleventigers/mitsuku-api",
+    "firebase": "^2.4.1",
+    "request-promise": "git://github.com/request/request-promise#v2.0.1",
+    "xml2js": "^0.4.16",
+    "fs": "^0.0.2",
+    "moment-timezone": "git://github.com/moment/moment-timezone#0.5.3",
+    "moment": "git://github.com/moment/moment#2.12.0"
+  }
+}
