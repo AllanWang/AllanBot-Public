@@ -2,8 +2,11 @@
 var Firebase = require("firebase");
 var firebaseOn = false;
 var myFirebaseRef, fBase, fBoolean, fOffline, fQN, fNick, fEndless, fSaved,
-  fNotifications, fSM, fTimeZone, fConversations, fColorSuggestions, fMIW, fTimeout;
+  fNotifications, fSM, fTimeZone, fConversations, fColorSuggestions, fMIW, fTimeout,
+  sBase;
 var moment = require('moment-timezone');
+var log = require("npmlog");
+var v = require('./globalVariables');
 
 function initializeFirebase(f) {
   fBase = f;
@@ -20,18 +23,27 @@ function initializeFirebase(f) {
   fColorSuggestions = fBase.child("colors_custom");
   fMIW = fBase.child("messages_in_waiting");
   fTimeout = fBoolean.child("timeout");
-  console.log('firebase loaded!');
+  log.info('firebase loaded!');
   firebaseOn = true;
 }
 
+function setBase(f) {
+  f.on("value", function(snapshot) {
+    sBase = snapshot.val();
+    log.info('sBase updated');
+  }, function (errorObject) {
+    console.log("Error retrieving fBase " + errorObject.code);
+  });
+}
+
 function setDataSimple(fLocation, input, success) {
-  console.log('starting setData');
+  log.info('starting setData');
   fLocation.set(input,
     function(error) {
       if (error) {
-        console.log("Data could not be saved");
+        log.error("Data could not be saved");
       } else if (success != null){
-        console.log(success);
+        log.info(success);
       }
   });
 }
@@ -49,7 +61,7 @@ function setData(api, message, fLocation, input, success) {
 
 function saveText(api, message, input) {
   if (!firebaseOn) {
-    console.log('firebase is not enabled, see initializeFirebase');
+    log.error('firebase is not enabled, see initializeFirebase');
     return;
   }
   input = moment.utc().format('MM/DD/YYYY') + ": " + input;
@@ -71,9 +83,51 @@ function backup(child, input) {
   });
 }
 
+//timeout
+function userTimeout(api, message, id, name) {
+  if (id == v.get('botID')) {
+    api.sendMessage("Sorry, I don't want to ban myself.", message.threadID);
+    return;
+  }
+  setData(api, message, fTimeout.child(message.threadID + '_' + id), name, name + ", you have been banned for 5 minutes.");
+  try {
+    api.sendMessage('You have been banned from ' + message.threadName + ' for 5 minutes', id);
+  } catch (err) {
+    api.sendMessage("I couldn't notify " + name + " about being banned from " + message.threadName, allanID);
+  }
+  setTimeout(function () {
+    api.removeUserFromGroup(id, message.threadID, function callback(err) {
+      if (err) return console.error(err);
+    });
+  }, 2000);
+
+  setTimeout(function () {
+      userUnTimeout(api, message, id, name, message.threadID);
+  }, 300000);
+}
+
+function userUnTimeout(api, message, id, name, thread) {
+  api.addUserToGroup(id, thread, function callback(err) {
+    if (err) { //TODO see if this is fixed; api issue
+      // api.sendMessage("uh... I can't add " + name + " back", message.threadID);
+      api.sendMessage('Welcome back ' + name + '; try not to get banned again.', thread);
+      setData(api, message, fTimeout.child(thread + '_' + id), null, null);
+      return console.error(err);
+      //facebook error
+    }
+
+    api.sendMessage('Welcome back ' + name + '; try not to get banned again.', thread);
+    setData(api, message, fTimeout.child(thread + '_' + id), null, null);
+  });
+}
+
 module.exports = {
   initializeFirebase: initializeFirebase,
+  setBase: setBase,
   setData: setData,
   setDataSimple: setDataSimple,
-  saveText: saveText
+  saveText: saveText,
+  userTimeout: userTimeout,
+  userUnTimeout: userUnTimeout
+
 }

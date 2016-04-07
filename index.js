@@ -1,14 +1,18 @@
 'use strict';
 var allanbotFirebase = require('./src/firebase');
 var allanbotBasic = require('./src/basic');
+var v = require('./src/globalVariables');
 
 ///FACEBOOK API STUFF - will be changed via setOptions
 var api;
-var botName = 'allanbot';
-var botID = 0;
-var l = botName.length;
 
 var log = require("npmlog");
+
+//Bot stuff
+var botName = 'AllanBot';
+var botNameLowerCase = botName.toLowerCase();
+var botID = 0;
+var botNameLength = botName.length;
 
 //Booleans that can be modified in enableFeatures
 var bTalkBack = false;
@@ -17,6 +21,7 @@ var bSpam = false;
 var bHelp = true;
 var bSavedText = false;
 var bQuickNotifications = false;
+var bTimeout = false;
 
 //Extra permissions
 var devMode = false;
@@ -25,7 +30,6 @@ var masterArray = [];
 var devArray = [];
 
 //FIREBASE STUFF
-var Firebase = require("firebase");
 var firebaseOn = false;
 
 //MOMENT STUFF
@@ -38,11 +42,17 @@ function setOptions(options) {
         log.level = options.logLevel;
         break;
       case 'botName':
-        botName = options.botName.toString().toLowerCase();
-        l = botName.length;
-        allanbotBasic.setBotName(options.botName.toString());
+        var n = options.botName.toString();
+        v.set('botName', n);
+        botName = n;
+        n = n.toLowerCase();
+        v.set('botNameLowerCase', n);
+        botNameLowerCase = n;
+        v.set('botNameLength', n.length);
+        botNameLength = n.length;
         break;
       case 'botID':
+        v.set('botID', options.botID);
         botID = options.botID;
         break;
       case 'api':
@@ -53,6 +63,7 @@ function setOptions(options) {
         break;
       case 'firebase':
         allanbotFirebase.initializeFirebase(options.firebase);
+        allanbotFirebase.setBase(options.firebase);
         firebaseOn = true;
         break;
       case 'masterArray':
@@ -70,7 +81,7 @@ function setOptions(options) {
     log.warn('API not received; nothing will work.');
   }
   if (botID == 0) {
-    log.warn('BotID not set; enabling selfListen in the facebook chat api may produce some issues.');
+    log.warn('BotID not set; enabling selfListen in the facebook chat api or using certain advanced functions may produce issues.');
   }
   if (!firebaseOn) {
     log.warn('Firebase is not set; a lot of features will not work');
@@ -85,6 +96,24 @@ function enableFeatures(options) {
         break;
       case 'echo':
         bEcho = options.echo;
+        break;
+      case 'quickNotifications':
+        bQuickNotifications = options.quickNotifications;
+        break;
+      case 'spam':
+        bSpam = options.spam;
+        if (bSpam) {
+          log.info('Spam is enabled; this is only for those with devMode');
+        }
+        break;
+      case 'help':
+        bHelp = options.help;
+        break;
+      case 'saveText':
+        bSavedText = options.savedText;
+        break;
+      case 'timeout':
+        bTimeout = options.timeout;
         break;
       default:
         log.warn('Unrecognized option given to enableFeatures', key);
@@ -101,24 +130,25 @@ function listen(message) {
 
   godMode = contains(masterArray, message.senderID);
   if (godMode) {
-    console.log('user has godMode');
+    log.info('user has godMode');
   }
   devMode = contains(devArray, message.senderID) || godMode;
   if (devMode && !godMode) {
-    console.log('user has devMode');
+    log.info('user has devMode');
   }
 
 
   var input = '';
   if (message.isGroup) {
-    if ((message.body.toLowerCase().slice(0, l + 2) == '@' + botName + ' ') && message.body.length > (l + 2)) {
-      input = message.body.slice(l+2);
+    if ((message.body.toLowerCase().slice(0, botNameLength + 2) == '@' + botNameLowerCase + ' ') && message.body.length > (botNameLength + 2)) {
+      input = message.body.slice(botNameLength+2);
     }
   } else {
     input = message.body;
   }
 
   if (input) {
+    log.info('Input', input);
     if (bSpam && input.slice(0, 6) == '--spam' && input.length == 6) {
       if (devMode) {
         spam(api, message);
@@ -128,12 +158,12 @@ function listen(message) {
     } else if (bHelp && input == '--help') {
       help(api, message);
     } else if (bEcho && input.slice(0, 7) == '--echo ' && input.length > 7) {
+      var s = input.slice(7);
       if (!godMode) {
-        var s = input.slice(7);
         if (s.slice(0,1) == '$') {
           api.sendMessage('You cannot run commands via echoing', message.threadID);
           return;
-        } else if (s.slice(0,9) == '@allanbot') {
+        } else if (s.slice(0,l + 1) == '@' + botName) {
           api.sendMessage("I don't want to echo myself.", message.threadID);
           return;
         }
@@ -144,23 +174,27 @@ function listen(message) {
         saveText(api, message, input.slice(7));
       } else if (input == '--saved') {
         try {
-          getData(api, message, sBase.savedMessages[message.threadID][message.senderID], 'Saved text:');
+          if (sBase.savedMessages[message.threadID][message.senderID]) {
+            api.sendMessage('Saved text:\n\n' + sBase.savedMessages[message.threadID][message.senderID], message.threadID);
+          } else {
+              api.sendMessage('No saved text found.', message.threadID);
+          }
         } catch (err) {
           api.sendMessage('No saved text found.', message.threadID);
         }
       } else if (input == '--erase') {
-        setData(api, message, fSaved.child(message.threadID).child(message.senderID), null, 'Erased saved text');
+        allanbotFirebase.setData(api, message, fSaved.child(message.threadID).child(message.senderID), null, 'Erased saved text');
       }
     } else if (bQuickNotifications) {
       if (input.toLowerCase() == '--eqn') {
-        setData(api, message, fQN.child(message.senderID), true, 'Quick notifications enabled.\nYou only need to do this once until you disable it.');
+        allanbotFirebase.setData(api, message, fQN.child(message.senderID), true, 'Quick notifications enabled.\nYou only need to do this once until you disable it.');
       } else if (input.toLowerCase() == '--dqn') {
-        setData(api, message, fQN.child(message.senderID), null, 'Quick notifications disabled.');
+        allanbotFirebase.setData(api, message, fQN.child(message.senderID), null, 'Quick notifications disabled.');
       }
-    } else if (input == '!!!') {
+    } else if (bTimeout && input == '!!!') {
       api.getUserInfo(message.senderID, function(err, ret) {
         if(err) return console.error(err);
-        userTimeout(api, message, message.senderID, ret[message.senderID].name);
+        allanbotFirebase.userTimeout(api, message, message.senderID, ret[message.senderID].name);
       });
     } else if (input.slice(0,1) == '#') {
       chatColorChange(api, message, input);
@@ -168,7 +202,7 @@ function listen(message) {
       api.getUserInfo(message.senderID, function(err, ret) {
         if(err) return console.error(err);
         var name = ret[message.senderID].firstName;
-        setData(api, message, fEndless.child(message.threadID).child(message.senderID), name, '@' + name + ' how are you?');
+        allanbotFirebase.setData(api, message, fEndless.child(message.threadID).child(message.senderID), name, '@' + name + ' how are you?');
       });
     } else if (bTalkBack) {
       allanbotBasic.respondRequest(api, message, input);
