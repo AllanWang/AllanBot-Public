@@ -1,9 +1,7 @@
 //FIREBASE STUFF
 var Firebase = require("firebase");
 var myFirebaseRef, fBase, fBoolean, fOffline, fQN, fNick, fEndless, fSaved,
-  fNotifications, fSM, fTimeZone, fConversations, fColorSuggestions, fMIW, fTimeout,
-  sBase;
-var moment = require('moment-timezone');
+  fNotifications, fSM, fTimeZone, fConversations, fColorSuggestions, fMIW, fTimeout;
 var log = require("npmlog");
 var v = require('./globalVariables');
 
@@ -28,7 +26,7 @@ function initializeFirebase(f) {
 
 function setBase(f) {
   f.on("value", function(snapshot) {
-    sBase = snapshot.val();
+    v.sBase = snapshot.val();
     log.info('sBase updated');
   }, function (errorObject) {
     console.log("Error retrieving fBase " + errorObject.code);
@@ -48,7 +46,7 @@ function setDataSimple(fLocation, input, success) {
 }
 
 function setData(api, message, fLocation, input, success) {
-  switch (fLocation) {
+  switch (fLocation) { /////x
     case 'fSaved':
       fLocation = fSaved.child(message.threadID).child(message.senderID);
       break;
@@ -72,35 +70,12 @@ function setData(api, message, fLocation, input, success) {
   });
 }
 
-function saveText(api, message, input) {
-  if (!v.firebaseOn) {
-    log.error('firebase is not enabled, see initializeFirebase');
-    return;
-  }
-  input = moment.utc().format('MM/DD/YYYY') + ": " + input;
-  try {
-    input = sBase.savedMessages[message.threadID][message.senderID] + "\n" + input;
-    backup("savedMessages/" + message.threadID + "/" + message.senderID, sBase.savedMessages[message.threadID][message.senderID]);
-  } catch (err) {
-    //Do nothing, no previous input found
-  }
-  setData(api, message, 'fSaved', input, 'Saved text:\n' + input);
+function setDataTimeout(api, message, thread, id, input, success) {
+  setData(api, message, fTimeout.child(thread + '_' + id), input, success);
 }
 
-function getSavedText(api, message) {
-  if (!v.firebaseOn) {
-    log.error('firebase is not enabled, see initializeFirebase');
-    return;
-  }
-  try {
-    if (sBase.savedMessages[message.threadID][message.senderID]) {
-      api.sendMessage('Saved text:\n\n' + sBase.savedMessages[message.threadID][message.senderID], message.threadID);
-    } else {
-        api.sendMessage('No saved text found.', message.threadID);
-    }
-  } catch (err) {
-    api.sendMessage('No saved text found.', message.threadID);
-  }
+function setDataColor(api, message, colorSuggestionName, input, success) {
+  setData(api, message, fColorSuggestions.child(message.threadID).child(colorSuggestionName), input, success);
 }
 
 function backup(child, input) {
@@ -112,56 +87,13 @@ function backup(child, input) {
   });
 }
 
-//timeout
-function userTimeout(api, message, id, name) {
-  if (!v.firebaseOn) {
-    log.error('firebase is not enabled, see initializeFirebase');
-    return;
-  }
-  if (id == v.botID) {
-    api.sendMessage("Sorry, I don't want to ban myself.", message.threadID);
-    return;
-  }
-  setData(api, message, fTimeout.child(message.threadID + '_' + id), name, name + ", you have been banned for 5 minutes.");
-  try {
-    api.sendMessage('You have been banned from ' + message.threadName + ' for 5 minutes', id);
-  } catch (err) {
-    api.sendMessage("I couldn't notify " + name + " about being banned from " + message.threadName, allanID);
-  }
-  setTimeout(function () {
-    api.removeUserFromGroup(id, message.threadID, function callback(err) {
-      if (err) return console.error(err);
-    });
-  }, 2000);
-
-  setTimeout(function () {
-      userUnTimeout(api, message, id, name, message.threadID);
-  }, 300000);
-}
-
-function userUnTimeout(api, message, id, name, thread) {
-  api.addUserToGroup(id, thread, function callback(err) {
-    if (err) { //TODO see if this is fixed; api issue
-      // api.sendMessage("uh... I can't add " + name + " back", message.threadID);
-      api.sendMessage('Welcome back ' + name + '; try not to get banned again.', thread);
-      setData(api, message, fTimeout.child(thread + '_' + id), null, null);
-      return console.error(err);
-      //facebook error
-    }
-
-    api.sendMessage('Welcome back ' + name + '; try not to get banned again.', thread);
-    setData(api, message, fTimeout.child(thread + '_' + id), null, null);
-  });
-}
 
 module.exports = {
   initializeFirebase: initializeFirebase,
+  backup: backup,
   setBase: setBase,
   setData: setData,
   setDataSimple: setDataSimple,
-  saveText: saveText,
-  getSavedText: getSavedText,
-  userTimeout: userTimeout,
-  userUnTimeout: userUnTimeout
-
+  setDataTimeout: setDataTimeout,
+  setDataColor: setDataColor
 }

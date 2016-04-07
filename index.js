@@ -1,6 +1,8 @@
 'use strict';
 var allanbotFirebase = require('./src/firebase');
 var allanbotBasic = require('./src/basic');
+var allanbotSaveText = require('./src/saveText');
+var allanbotChatColour = require('./src/chatColour');
 var v = require('./src/globalVariables');
 var log = require("npmlog");
 
@@ -75,28 +77,34 @@ function enableFeatures(options) {
   Object.keys(options).map(function(key) {
     switch (key) {
       case 'talkBack':
-        bTalkBack = options.talkBack;
+        v.b.talkBack = options.talkBack;
         break;
       case 'echo':
-        bEcho = options.echo;
+        v.b.echo = options.echo;
         break;
       case 'quickNotifications':
-        bQuickNotifications = options.quickNotifications;
+        v.b.quickNotifications = options.quickNotifications;
         break;
       case 'spam':
-        bSpam = options.spam;
+        v.b.spam = options.spam;
         if (bSpam) {
           log.info('Spam is enabled; this is only for those with devMode');
         }
         break;
       case 'help':
-        bHelp = options.help;
+        v.b.help = options.help;
         break;
       case 'saveText':
-        bSavedText = options.saveText;
+        v.b.savedText = options.saveText;
         break;
       case 'timeout':
-        bTimeout = options.timeout;
+        v.b.timeout = options.timeout;
+        break;
+      case 'chatColor':
+        v.b.chatColor = options.chatColor;
+        break;
+      case 'everything':
+        v.setAll(options.everything);
         break;
       default:
         log.warn('Unrecognized option given to enableFeatures', key);
@@ -111,19 +119,24 @@ function listen(message) {
     return;
   }
 
-  godMode = contains(masterArray, message.senderID);
+  godMode = v.contains(masterArray, message.senderID);
   if (godMode) {
     log.info('user has godMode');
   }
-  devMode = contains(devArray, message.senderID) || godMode;
+  devMode = v.contains(devArray, message.senderID) || godMode;
   if (devMode && !godMode) {
     log.info('user has devMode');
   }
+
+  //Listeners go here
+  if (allanbotChatColour.colorSuggestionListener(api, message)) return;
 
   if (message.senderID == v.botID) {
     return; //stop listening to bot
   }
 
+
+  //Input stuff goes here
   var input = '';
   if (message.isGroup) {
     if ((message.body.toLowerCase().slice(0, v.botNameLength + 2) == '@' + v.botName.toLowerCase() + ' ') && message.body.length > (v.botNameLength + 2)) {
@@ -132,20 +145,44 @@ function listen(message) {
   } else {
     input = message.body;
   }
-
   if (input) {
     log.info('Input', input);
-    if (bSpam && input.slice(0, 6) == '--spam' && input.length == 6) {
+
+    if (v.b.savedText) {
+      if (input.slice(0, 7) == '--save ' && input.length > 7) {
+        allanbotSaveText.saveText(api, message, input.slice(7));
+        return;
+      } else if (input == '--saved') {
+        allanbotSaveText.getSavedText(api, message);
+        return;
+      } else if (input == '--erase') {
+        allanbotFirebase.setData(api, message, 'fSaved', null, 'Erased saved text');
+        return;
+      }
+    }
+
+    if (v.b.quickNotifications) { //TODO add
+      if (input.toLowerCase() == '--eqn') {
+        allanbotFirebase.setData(api, message, 'fQN', true, 'Quick notifications enabled.\nYou only need to do this once until you disable it.');
+        return;
+      } else if (input.toLowerCase() == '--dqn') {
+        allanbotFirebase.setData(api, message, 'fQN', null, 'Quick notifications disabled.');
+        return;
+      }
+    }
+
+    if (v.b.spam && input == '--spam') {
       if (devMode) {
-        spam(api, message);
+        allanbotBasic.spam(api, message);
       } else {
         api.sendMessage('You do not have the power to do this.', message.threadID);
       }
-    } else if (bHelp && input == '--help') {
+    } else if (v.b.help && input == '--help') { //TODO add
+      return v.wip(api, message);
       help(api, message);
-    } else if (bEcho && input.slice(0, 7) == '--echo ' && input.length > 7) {
+    } else if (v.b.echo && input.slice(0, 7) == '--echo ' && input.length > 7) {
       var s = input.slice(7);
-      if (!godMode) {
+      if (!godMode) { //TODO add these things
         if (s.slice(0,1) == '$') {
           api.sendMessage('You cannot run commands via echoing', message.threadID);
           return;
@@ -155,42 +192,23 @@ function listen(message) {
         }
       }
       allanbotBasic.echo(api, message, s);
-    } else if (bSavedText) {
-      if (input.slice(0, 7) == '--save ' && input.length > 7) {
-        allanbotFirebase.saveText(api, message, input.slice(7));
-      } else if (input == '--saved') {
-        allanbotFirebase.getSavedText(api, message);
-      } else if (input == '--erase') {
-        allanbotFirebase.setData(api, message, 'fSaved', null, 'Erased saved text');
-      }
-    } else if (bQuickNotifications) {
-      if (input.toLowerCase() == '--eqn') {
-        allanbotFirebase.setData(api, message, 'fQN', true, 'Quick notifications enabled.\nYou only need to do this once until you disable it.');
-      } else if (input.toLowerCase() == '--dqn') {
-        allanbotFirebase.setData(api, message, 'fQN', null, 'Quick notifications disabled.');
-      }
-    } else if (bTimeout && input == '!!!') {
+    } else if (v.b.timeout && input == '!!!') {
       api.getUserInfo(message.senderID, function(err, ret) {
         if(err) return console.error(err);
         allanbotFirebase.userTimeout(api, message, message.senderID, ret[message.senderID].name);
       });
-    } else if (input.slice(0,1) == '#') {
-      chatColorChange(api, message, input);
-    } else if (input == '--me') {
+    } else if (v.b.chatColor && input.slice(0,1) == '#') { //TODO add
+      allanbotChatColour.chatColorChange(api, message, input);
+    } else if (input == '--me') { //TODO add
       api.getUserInfo(message.senderID, function(err, ret) {
         if(err) return console.error(err);
         var name = ret[message.senderID].firstName;
         allanbotFirebase.setData(api, message, 'fEndless', name, '@' + name + ' how are you?');
       });
-    } else if (bTalkBack) {
+    } else if (v.b.talkBack) {
       allanbotBasic.respondRequest(api, message, input);
     }
   }
-}
-
-//BASIC
-function contains (message, value) {
-  return (message.toString().toLowerCase().indexOf(value.toString().toLowerCase()) != -1);
 }
 
 module.exports = {
@@ -201,5 +219,7 @@ module.exports = {
   //The behind the scene files that can be used by other developers
   allanbotBasic: allanbotBasic,
   allanbotFirebase: allanbotFirebase,
+  allanbotSaveText: allanbotSaveText,
+  allanbotChatColour: allanbotChatColour,
   v: v
 }

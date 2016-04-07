@@ -10,6 +10,25 @@ function echo(api, message, input) {
   api.sendMessage(input, message.threadID);
 }
 
+function spam(api, message) {
+  var i = 1;
+  for (var i=0; i<25; i++) {
+    setTimeout(function(){
+      if (!v.isMuted) {
+        var text1 = Array(11).join((Math.random().toString(36)+'00000000000000000').slice(2, 18)).slice(0, 10);
+        var text2 = Array(11).join((Math.random().toString(36)+'00000000000000000').slice(2, 18)).slice(0, 10);
+        var text3 = Array(11).join((Math.random().toString(36)+'00000000000000000').slice(2, 18)).slice(0, 10);
+        var text4 = Array(11).join((Math.random().toString(36)+'00000000000000000').slice(2, 18)).slice(0, 10);
+        var text5 = Array(11).join((Math.random().toString(36)+'00000000000000000').slice(2, 18)).slice(0, 10);
+        var text = text1 + "\n" + text2 + "\n" + text3 + "\n" + text4 + "\n" + text5;
+        api.sendMessage(text, message.threadID);
+      } else {
+        clearTimeout();
+      }
+    },i*500);
+  }
+}
+
 function enablePandora(id) {
   pandoraID = id;
   v.pandoraEnabled = true;
@@ -59,6 +78,7 @@ function mitsukuRequest(api, message, input, prefix) {
 
 module.exports = {
   echo: echo,
+  spam: spam,
   enablePandora: enablePandora,
   respondRequest: respondRequest
 }
