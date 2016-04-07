@@ -2,13 +2,15 @@
 var allanbotFirebase = require('./src/firebase');
 var allanbotBasic = require('./src/basic');
 
-///FACEBOOK API STUFF
+///FACEBOOK API STUFF - will be changed via setOptions
 var api;
 var botName = 'allanbot';
 var botID = 0;
 var l = botName.length;
+
 var log = require("npmlog");
 
+//Booleans that can be modified in enableFeatures
 var bTalkBack = false;
 var bEcho = false;
 var bSpam = false;
@@ -16,13 +18,11 @@ var bHelp = true;
 var bSavedText = false;
 var bQuickNotifications = false;
 
+//Extra permissions
 var devMode = false;
 var godMode = false;
-
 var masterArray = [];
 var devArray = [];
-
-
 
 //FIREBASE STUFF
 var Firebase = require("firebase");
@@ -95,7 +95,7 @@ function enableFeatures(options) {
 
 
 function listen(message) {
-  if (!message.body) {
+  if (!message.body) { //no text
     return;
   }
 
@@ -151,14 +151,12 @@ function listen(message) {
       } else if (input == '--erase') {
         setData(api, message, fSaved.child(message.threadID).child(message.senderID), null, 'Erased saved text');
       }
-      return;
     } else if (bQuickNotifications) {
       if (input.toLowerCase() == '--eqn') {
         setData(api, message, fQN.child(message.senderID), true, 'Quick notifications enabled.\nYou only need to do this once until you disable it.');
       } else if (input.toLowerCase() == '--dqn') {
         setData(api, message, fQN.child(message.senderID), null, 'Quick notifications disabled.');
       }
-      return;
     } else if (input == '!!!') {
       api.getUserInfo(message.senderID, function(err, ret) {
         if(err) return console.error(err);
