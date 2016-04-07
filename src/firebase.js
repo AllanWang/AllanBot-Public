@@ -1,6 +1,5 @@
 //FIREBASE STUFF
 var Firebase = require("firebase");
-var firebaseOn = false;
 var myFirebaseRef, fBase, fBoolean, fOffline, fQN, fNick, fEndless, fSaved,
   fNotifications, fSM, fTimeZone, fConversations, fColorSuggestions, fMIW, fTimeout,
   sBase;
@@ -24,7 +23,7 @@ function initializeFirebase(f) {
   fMIW = fBase.child("messages_in_waiting");
   fTimeout = fBoolean.child("timeout");
   log.info('firebase loaded!');
-  firebaseOn = true;
+  v.firebaseOn = true;
 }
 
 function setBase(f) {
@@ -49,6 +48,20 @@ function setDataSimple(fLocation, input, success) {
 }
 
 function setData(api, message, fLocation, input, success) {
+  switch (fLocation) {
+    case 'fSaved':
+      fLocation = fSaved.child(message.threadID).child(message.senderID);
+      break;
+    case 'fQN':
+      fLocation = fQN.child(message.senderID);
+      break;
+    case 'fEndless':
+      fLocation = fEndless.child(message.threadID).child(message.senderID);
+      break;
+    default:
+      log.info('setData on an unknown location; no switch used');
+      break;
+  }
   fLocation.set(input,
     function(error) {
       if (error) {
@@ -60,7 +73,7 @@ function setData(api, message, fLocation, input, success) {
 }
 
 function saveText(api, message, input) {
-  if (!firebaseOn) {
+  if (!v.firebaseOn) {
     log.error('firebase is not enabled, see initializeFirebase');
     return;
   }
@@ -71,7 +84,23 @@ function saveText(api, message, input) {
   } catch (err) {
     //Do nothing, no previous input found
   }
-  setData(api, message, fSaved.child(message.threadID).child(message.senderID), input, 'Saved text:\n' + input);
+  setData(api, message, 'fSaved', input, 'Saved text:\n' + input);
+}
+
+function getSavedText(api, message) {
+  if (!v.firebaseOn) {
+    log.error('firebase is not enabled, see initializeFirebase');
+    return;
+  }
+  try {
+    if (sBase.savedMessages[message.threadID][message.senderID]) {
+      api.sendMessage('Saved text:\n\n' + sBase.savedMessages[message.threadID][message.senderID], message.threadID);
+    } else {
+        api.sendMessage('No saved text found.', message.threadID);
+    }
+  } catch (err) {
+    api.sendMessage('No saved text found.', message.threadID);
+  }
 }
 
 function backup(child, input) {
@@ -85,6 +114,10 @@ function backup(child, input) {
 
 //timeout
 function userTimeout(api, message, id, name) {
+  if (!v.firebaseOn) {
+    log.error('firebase is not enabled, see initializeFirebase');
+    return;
+  }
   if (id == v.botID) {
     api.sendMessage("Sorry, I don't want to ban myself.", message.threadID);
     return;
@@ -127,6 +160,7 @@ module.exports = {
   setData: setData,
   setDataSimple: setDataSimple,
   saveText: saveText,
+  getSavedText: getSavedText,
   userTimeout: userTimeout,
   userUnTimeout: userUnTimeout
 

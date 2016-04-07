@@ -1,6 +1,5 @@
 var rp = require('request-promise');
 var xml2js = require('xml2js');
-var pandoraEnabled = false;
 var pandoraID;
 var mitsukuMode = true;
 var m = require('mitsuku-api')();
@@ -13,12 +12,12 @@ function echo(api, message, input) {
 
 function enablePandora(id) {
   pandoraID = id;
-  pandoraEnabled = true;
+  v.pandoraEnabled = true;
   mitsukuMode = false;
 }
 
 function respondRequest(api, message, input, prefix) {
-  if (!mitsukuMode && pandoraEnabled) {
+  if (!mitsukuMode && v.pandoraEnabled) {
     try {
       pandoraRequest(api, message, input, prefix);
       return;

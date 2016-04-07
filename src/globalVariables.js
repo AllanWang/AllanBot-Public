@@ -1,7 +1,8 @@
 
 module.exports = {
   botName: 'AllanBot',
-  botNameLowerCase: 'allanbot',
   botID: 0,
-  botNameLength: 9
+  botNameLength: 9,
+  firebaseOn: false,
+  pandoraEnabled: false
 }
