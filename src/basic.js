@@ -47,9 +47,9 @@ function pandoraRequest(api, message, input, prefix) {
 function mitsukuRequest(api, message, input, prefix) {
   if (prefix === undefined) prefix = ''; //TODO check if necessary
   try {
-    m.send(input.replace(/[v.get('botName')]/ig, 'Mitsuku'))
+    m.send(input.replace(/[v.botName]/ig, 'Mitsuku'))
     .then(function(response){
-      response = (response + '').replace(/mitsuku/ig, v.get('botName')); //renaming the bot :)
+      response = (response + '').replace(/mitsuku/ig, v.botName); //renaming the bot :)
       log.info(prefix + 'Replying: ' + response);
       api.sendMessage(prefix + response, message.threadID);
     });

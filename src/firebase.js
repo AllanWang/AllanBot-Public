@@ -85,7 +85,7 @@ function backup(child, input) {
 
 //timeout
 function userTimeout(api, message, id, name) {
-  if (id == v.get('botID')) {
+  if (id == v.botID) {
     api.sendMessage("Sorry, I don't want to ban myself.", message.threadID);
     return;
   }

@@ -43,17 +43,13 @@ function setOptions(options) {
         break;
       case 'botName':
         var n = options.botName.toString();
-        v.set('botName', n);
         botName = n;
-        n = n.toLowerCase();
-        v.set('botNameLowerCase', n);
-        botNameLowerCase = n;
-        v.set('botNameLength', n.length);
+        v.botName = n;
         botNameLength = n.length;
         break;
       case 'botID':
-        v.set('botID', options.botID);
         botID = options.botID;
+        v.botID = botID;
         break;
       case 'api':
         api = options.api;
@@ -137,6 +133,9 @@ function listen(message) {
     log.info('user has devMode');
   }
 
+  if (message.senderID == v.botID) {
+    return; //stop listening to bot
+  }
 
   var input = '';
   if (message.isGroup) {
