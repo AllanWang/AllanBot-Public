@@ -48,7 +48,7 @@ function colorSuggestionListener(api, message) {
     if (message.body.slice(0,1) == '#') {
       log.info('got to here');
       if (/^#[0-9A-F]{6}$/i.test(message.body)) {
-        f.setDataColor(api, message, colorSuggestionName, message.body, 'Suggestion saved; thanks!');
+        f.setData(api, message, v.f.ColorSuggestions.child(message.threadID).child(colorSuggestionName), message.body, 'Suggestion saved; thanks!');
         chatColorChange(api, message, message.body);
         return true;
       } else {

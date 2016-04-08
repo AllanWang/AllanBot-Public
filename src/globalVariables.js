@@ -9,15 +9,36 @@ var featureBooleans = {
   chatColor: false
 };
 
+var firebase = {
+  Offline: null,
+  QN: null,
+  Nick: null,
+  Endless: null,
+  Saved: null,
+  Notifications: null,
+  SM: null,
+  TimeZone: null,
+  Conversations: null,
+  ColorSuggestions: null,
+  MIW: null,
+  Timeout: null
+}
+
 module.exports = {
   botName: 'AllanBot',
+  botNameL: 'allanbot',
+  myID: 0,
   botID: 0,
   botNameLength: 9,
   firebaseOn: false,
   pandoraEnabled: false,
   isMuted: false,
+  godMode: false,
+  devMode: false,
+  ignoreArray: [],
   sBase: 'placeholder',
   b: featureBooleans,
+  f: firebase,
   setAll: function(v) {
     for (var b in featureBooleans) {
       featureBooleans[b] = v;
@@ -28,9 +49,7 @@ module.exports = {
   },
   wip: function(api, message) {
     api.sendMessage('This function is currently WIP', message.threadID);
-  },
-  colorSuggestionBoolean: 0,
-  colorSuggestionName: ''
+  }
 
 
 }

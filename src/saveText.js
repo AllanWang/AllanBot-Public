@@ -15,7 +15,7 @@ function saveText(api, message, input) {
   } catch (err) {
     //Do nothing, no previous input found
   }
-  f.setData(api, message, 'fSaved', input, 'Saved text:\n' + input);
+  f.setData(api, message, v.f.Saved.child(message.threadID).child(message.senderID), input, 'Saved text:\n' + input);
 }
 
 function getSavedText(api, message) {

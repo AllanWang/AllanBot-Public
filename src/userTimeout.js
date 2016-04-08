@@ -11,7 +11,7 @@ function userTimeout(api, message, id, name) {
     api.sendMessage("Sorry, I don't want to ban myself.", message.threadID);
     return;
   }
-  f.setDataTimeout(api, message, message.threadID, id, name, name + ", you have been banned for 5 minutes.");
+  f.setData(api, message, v.f.Timeout.child(message.threadID + '_' + id), name, name + ", you have been banned for 5 minutes.");
   try {
     api.sendMessage('You have been banned from ' + message.threadName + ' for 5 minutes', id);
   } catch (err) {
@@ -33,13 +33,13 @@ function userUnTimeout(api, message, id, name, thread) {
     if (err) { //TODO see if this is fixed; api issue
       // api.sendMessage("uh... I can't add " + name + " back", message.threadID);
       api.sendMessage('Welcome back ' + name + '; try not to get banned again.', thread);
-      f.setDataTimeout(api, message, thread, id, null, null);
+      f.setData(api, message, v.f.Timeout.child(thread + '_' + id), null, null);
       return console.error(err);
       //facebook error
     }
 
     api.sendMessage('Welcome back ' + name + '; try not to get banned again.', thread);
-    f.setDataTimeout(api, message, thread, id, null, null);
+    f.setData(api, message, v.f.Timeout.child(thread + '_' + id), null, null);
   });
 }
 

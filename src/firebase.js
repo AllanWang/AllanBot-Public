@@ -1,25 +1,22 @@
-//FIREBASE STUFF
-var Firebase = require("firebase");
-var myFirebaseRef, fBase, fBoolean, fOffline, fQN, fNick, fEndless, fSaved,
-  fNotifications, fSM, fTimeZone, fConversations, fColorSuggestions, fMIW, fTimeout;
+var fBase, fBoolean;
 var log = require("npmlog");
 var v = require('./globalVariables');
 
 function initializeFirebase(f) {
   fBase = f;
   fBoolean = fBase.child("boolean");
-  fOffline = fBoolean.child("heroku_offline");
-  fQN = fBoolean.child("quick_notify");
-  fNick = fBase.child("nicknames");
-  fEndless = fBoolean.child("endless_talk");
-  fSaved = fBase.child("savedMessages");
-  fNotifications = fBase.child("notificationMessages");
-  fSM = fBase.child("scheduled_messages");
-  fTimeZone = fBase.child("timezone_offset");
-  fConversations = fBase.child("conversations");
-  fColorSuggestions = fBase.child("colors_custom");
-  fMIW = fBase.child("messages_in_waiting");
-  fTimeout = fBoolean.child("timeout");
+  v.f.Offline = fBoolean.child("heroku_offline");
+  v.f.QN = fBoolean.child("quick_notify");
+  v.f.Nick = fBase.child("nicknames");
+  v.f.Endless = fBoolean.child("endless_talk");
+  v.f.Saved = fBase.child("savedMessages");
+  v.f.Notifications = fBase.child("notificationMessages");
+  v.f.SM = fBase.child("scheduled_messages");
+  v.f.TimeZone = fBase.child("timezone_offset");
+  v.f.Conversations = fBase.child("conversations");
+  v.f.ColorSuggestions = fBase.child("colors_custom");
+  v.f.MIW = fBase.child("messages_in_waiting");
+  v.f.Timeout = fBoolean.child("timeout");
   log.info('firebase loaded!');
   v.firebaseOn = true;
 }
@@ -46,20 +43,6 @@ function setDataSimple(fLocation, input, success) {
 }
 
 function setData(api, message, fLocation, input, success) {
-  switch (fLocation) { /////x
-    case 'fSaved':
-      fLocation = fSaved.child(message.threadID).child(message.senderID);
-      break;
-    case 'fQN':
-      fLocation = fQN.child(message.senderID);
-      break;
-    case 'fEndless':
-      fLocation = fEndless.child(message.threadID).child(message.senderID);
-      break;
-    default:
-      log.info('setData on an unknown location; no switch used');
-      break;
-  }
   fLocation.set(input,
     function(error) {
       if (error) {
@@ -68,14 +51,6 @@ function setData(api, message, fLocation, input, success) {
         api.sendMessage(success, message.threadID);
       }
   });
-}
-
-function setDataTimeout(api, message, thread, id, input, success) {
-  setData(api, message, fTimeout.child(thread + '_' + id), input, success);
-}
-
-function setDataColor(api, message, colorSuggestionName, input, success) {
-  setData(api, message, fColorSuggestions.child(message.threadID).child(colorSuggestionName), input, success);
 }
 
 function backup(child, input) {
@@ -93,7 +68,5 @@ module.exports = {
   backup: backup,
   setBase: setBase,
   setData: setData,
-  setDataSimple: setDataSimple,
-  setDataTimeout: setDataTimeout,
-  setDataColor: setDataColor
+  setDataSimple: setDataSimple
 }
