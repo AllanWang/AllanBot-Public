@@ -1,10 +1,17 @@
 'use strict';
 var f = require('./src/firebase');
-var allanbotBasic = require('./src/basic');
-var allanbotSaveText = require('./src/saveText');
-var allanbotChatColour = require('./src/chatColour');
-var allanbotQuick = require('./src/quickNotifications');
-var allanbotTimeout = require('./src/userTimeout');
+var ab = [
+  'basic',
+  'saveText',
+  'chatColour',
+  'quickNotifications',
+  'userTimeout'
+]
+
+ab.map(function(v) {
+  ab[v] = require('./src/' + v);
+});
+
 var v = require('./src/globalVariables');
 var log = require("npmlog");
 
@@ -14,9 +21,6 @@ var api;
 //Extra permissions
 var masterArray = [];
 var devArray = [];
-
-//MOMENT STUFF
-var moment = require('moment-timezone');
 
 function setOptions(options) {
   Object.keys(options).map(function(key) {
@@ -40,7 +44,7 @@ function setOptions(options) {
         api = options.api;
         break;
       case 'pandoraID':
-        allanbotBasic.enablePandora(options.pandoraID.toString());
+        ab.basic.enablePandora(options.pandoraID.toString());
         break;
       case 'firebase':
         f.initializeFirebase(options.firebase);
@@ -69,6 +73,7 @@ function setOptions(options) {
   if (!v.firebaseOn) {
     log.warn('Firebase is not set; a lot of features will not work');
   }
+  log.info('Welcome ' + v.botName);
 }
 
 function enableFeatures(options) {
@@ -127,9 +132,9 @@ function listen(message) {
   }
 
   //Listeners go here
-  if (allanbotChatColour.colorSuggestionListener(api, message)) return;
-  allanbotQuick.notifyData(api, message);
-  if (allanbotQuick.createNotifyData(api, message)) return;
+  if (ab.chatColour.colorSuggestionListener(api, message)) return;
+  ab.quickNotifications.notifyData(api, message);
+  if (ab.quickNotifications.createNotifyData(api, message)) return;
 
   if (message.senderID == v.botID) {
     return; //stop listening to bot
@@ -150,10 +155,10 @@ function listen(message) {
 
     if (v.b.savedText) {
       if (input.slice(0, 7) == '--save ' && input.length > 7) {
-        allanbotSaveText.saveText(api, message, input.slice(7));
+        ab.saveText.saveText(api, message, input.slice(7));
         return;
       } else if (input == '--saved') {
-        allanbotSaveText.getSavedText(api, message);
+        ab.saveText.getSavedText(api, message);
         return;
       } else if (input == '--erase') {
         f.setData(api, message, v.f.Saved.child(message.threadID).child(message.senderID), null, 'Erased saved text');
@@ -173,7 +178,7 @@ function listen(message) {
 
     if (v.b.spam && input == '--spam') {
       if (v.devMode) {
-        allanbotBasic.spam(api, message);
+        ab.basic.spam(api, message);
       } else {
         api.sendMessage('You do not have the power to do this.', message.threadID);
       }
@@ -191,14 +196,14 @@ function listen(message) {
           return;
         }
       }
-      allanbotBasic.echo(api, message, s);
+      ab.basic.echo(api, message, s);
     } else if (v.b.timeout && input == '!!!') {
       api.getUserInfo(message.senderID, function(err, ret) {
         if(err) return console.error(err);
-        allanbotTimeout.userTimeout(api, message, message.senderID, ret[message.senderID].name);
+        ab.userTimeout.userTimeout(api, message, message.senderID, ret[message.senderID].name);
       });
     } else if (v.b.chatColor && input.slice(0,1) == '#') { //TODO add
-      allanbotChatColour.chatColorChange(api, message, input);
+      ab.chatColour.chatColorChange(api, message, input);
     } else if (input == '--me') { //TODO add
       api.getUserInfo(message.senderID, function(err, ret) {
         if(err) return console.error(err);
@@ -206,7 +211,7 @@ function listen(message) {
         f.setData(api, message, v.f.Endless.child(message.threadID).child(message.senderID), name, '@' + name + ' how are you?');
       });
     } else if (v.b.talkBack) {
-      allanbotBasic.respondRequest(api, message, input);
+      ab.basic.respondRequest(api, message, input);
     }
   }
 }
@@ -217,11 +222,7 @@ module.exports = {
   enableFeatures: enableFeatures,
   listen: listen,
   //The behind the scene files that can be used by other developers
-  allanbotBasic: allanbotBasic,
-  allanbotFirebase: f,
-  allanbotSaveText: allanbotSaveText,
-  allanbotChatColour: allanbotChatColour,
-  allanbotQuick: allanbotQuick,
-  allanbotTimeout: allanbotTimeout,
+  allanbotSub: ab,
+  firebase: f,
   v: v
 }
