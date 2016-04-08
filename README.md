@@ -10,7 +10,7 @@ The bot can be seen [here](https://www.facebook.com/profile.php?id=1000044101584
 
 To use this, either install the module via
 
-`npm install 'allanbot'`
+`npm install allanbot`
 
 or add the following to your package.json dependency:
 
