@@ -1,5 +1,5 @@
 Here is an example of a complete bot js file.
-Please note that you will need both the facebook-chat-api and firebase dependencies for this to work.
+Please note that you will need both the [facebook-chat-api](https://github.com/Schmavery/facebook-chat-api) and [firebase](https://www.firebase.com/) dependencies for this to work.
 
 ```javascript
 var allanbot = require('allanbot'); //You can name this whatever you want; just be sure to change all other "allanbot" variables accordingly
