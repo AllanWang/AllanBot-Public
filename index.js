@@ -1,6 +1,6 @@
 'use strict';
 var f = require('./src/firebase');
-var aBasic = require('./src/basic');
+var allanbotBasic = require('./src/basic');
 var allanbotSaveText = require('./src/saveText');
 var allanbotChatColour = require('./src/chatColour');
 var allanbotQuick = require('./src/quickNotifications');
