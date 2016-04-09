@@ -1,20 +1,27 @@
 'use strict';
 var f = require('./src/firebase');
+var v = require('./src/globalVariables');
+var log = require("npmlog");
+
 var ab = [
     'basic',
     'endlessTalk',
     'saveText',
     'chatColour',
     'quickNotifications',
-    'userTimeout'
+    'userTimeout',
+    'remind',
+    'nickname'
 ]
 
 ab.map(function(sub) {
+    if (sub != 'basic') { //basic is not a valid boolean
+        v.b[sub] = false; //add all other ab values to the boolean map
+    }
     ab[sub] = require('./src/' + sub);
 });
 
-var v = require('./src/globalVariables');
-var log = require("npmlog");
+
 
 ///FACEBOOK API STUFF - will be changed via setOptions
 var api;
@@ -86,38 +93,16 @@ function setOptions(options) {
 function enableFeatures(options) {
     Object.keys(options).map(function(key) {
         switch (key) {
-            case 'talkBack':
-                v.b.talkBack = options.talkBack;
-                break;
-            case 'echo':
-                v.b.echo = options.echo;
-                break;
-            case 'quickNotifications':
-                v.b.quickNotifications = options.quickNotifications;
-                break;
             case 'spam':
                 v.b.spam = options.spam;
                 if (bSpam) {
                     log.info('Spam is enabled; this is only for those with devMode');
                 }
                 break;
-            case 'help':
-                v.b.help = options.help;
-                break;
-            case 'saveText':
-                v.b.savedText = options.saveText;
-                break;
-            case 'endlessTalk':
-                v.b.endlessTalk = options.endlessTalk;
-                break;
-            case 'timeout':
-                v.b.timeout = options.timeout;
-                break;
-            case 'chatColor':
-                v.b.chatColor = options.chatColor;
-                break;
             case 'everything':
-                v.setAll(options.everything);
+                for (var b in v.b) {
+                    v.b[b] = options.everything;
+                }
                 break;
             case 'notifyMention':
                 if (v.botName && v.botID && v.myID && v.myName) {
@@ -126,11 +111,32 @@ function enableFeatures(options) {
                     log.warn('notifyMention disabled; make sure you have set both you and the bot\'s name and ID');
                 }
                 break;
+            case 'reminders':
+                v.b.reminders = options.reminders;
+                if (v.b.reminders) {
+                    setTimeout(function() {
+                        ab.remind.getScheduledMessages();
+                    }, 10000);
+                    setInterval(function() {
+                        v.nextScheduledMessageNotif = true;
+                    }, 500000);
+                    setInterval(function() {
+                        ab.remind.checkTimeNotification(api);
+                    }, 50000);
+                }
+                break;
             default:
-                log.warn('Unrecognized option given to enableFeatures', key);
+                if (key in v.b) {
+                    v.b[key] = options[key];
+                } else {
+                    log.warn('Unrecognized option given to enableFeatures', key);
+                }
                 break;
         }
     });
+
+    // console.log(JSON.stringify(v.b));
+
 }
 
 
@@ -138,6 +144,8 @@ function listen(message) {
     if (!message.body) { //no text
         return;
     }
+
+    v.continue = true;
 
     v.godMode = v.contains(masterArray, message.senderID);
     if (v.godMode) {
@@ -148,10 +156,14 @@ function listen(message) {
         log.info('user has devMode');
     }
 
-    //Listeners go here
-    ab.quickNotifications.notifyData(api, message);
+    //Listeners go here   SNR = should not return
+    ab.quickNotifications.notifyData(api, message); //SNR: sends notification if it exists
 
-    ab.basic.notifyMention(api, message);
+    ab.basic.notifyMention(api, message); //SNR: notifies main user on mention
+
+    if (ab.remind.setTimezone(api, message)) return;
+
+    if (ab.remind.createTimeNotification(api, message)) return;
 
     if (ab.chatColour.colorSuggestionListener(api, message)) return;
 
@@ -162,7 +174,6 @@ function listen(message) {
     if (message.senderID == v.botID) {
         return; //stop listening to bot
     }
-
     //input checker
     var input = '';
     if (message.isGroup) {
@@ -172,22 +183,21 @@ function listen(message) {
     } else {
         input = message.body;
     }
-
     //godMode stuff
     if (v.godMode) {
         if (ab.endlessTalk.endlessTalk(api, message)) return;
-        if (input) {
-            if (ab.basic.muteToggle(api, message)) return;
-        }
     }
+
+    //global stuff
 
     // if (v.godMode) log.info('checking input');
     //Input stuff goes here
-
     if (input) {
         log.info('Input', input);
-
-        if (v.b.savedText) {
+        if (v.godMode) {
+            if (ab.basic.muteToggle(api, message)) return;
+        }
+        if (v.b.saveText) {
             if (input.slice(0, 7) == '--save ' && input.length > 7) {
                 ab.saveText.saveText(api, message, input.slice(7));
                 return;
@@ -231,27 +241,24 @@ function listen(message) {
                 }
             }
             ab.basic.echo(api, message, s);
-        } else if (v.b.timeout && input == '!!!') {
+        } else if (v.b.userTimeout && input == '!!!') {
             api.getUserInfo(message.senderID, function(err, ret) {
                 if (err) return console.error(err);
                 ab.userTimeout.userTimeout(api, message, message.senderID, ret[message.senderID].name);
             });
-        } else if (v.b.chatColor && input.slice(0, 1) == '#') { //TODO add
-            ab.chatColour.chatColorChange(api, message, input);
-        } else if (v.b.endlessTalk && input == '--me') {
-            api.getUserInfo(message.senderID, function(err, ret) {
-                if (err) return console.error(err);
-                var name = ret[message.senderID].firstName;
-                f.setData(api, message, v.f.Endless.child(message.threadID).child(message.senderID), name, '@' + name + ' how are you?');
-            });
-        } else if (v.b.talkBack) {
-            ab.basic.respondRequest(api, message, input);
         }
+
+        if (v.b.nickname) ab.nickname.changeNicknameBasic(api, message, input);
+        if (v.b.chatColour) ab.chatColour.chatColorChange(api, message, input);
+        if (v.b.endlessTalk) ab.endlessTalk.endlessTalkMe(api, message, input);
+        if (v.b.talkBack && v.continue) ab.basic.respondRequest(api, message, input);
+
     }
 }
 
 module.exports = {
     //The essential functions
+    ab: ab,
     setOptions: setOptions,
     enableFeatures: enableFeatures,
     listen: listen,

@@ -2,7 +2,6 @@ var log = require("npmlog");
 var v = require('./globalVariables');
 var f = require('./firebase');
 
-
 function notifyData(api, message) {
     try {
         if (v.sBase.notificationMessages[message.threadID][message.senderID]) {

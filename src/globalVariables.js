@@ -3,12 +3,7 @@ var featureBooleans = {
     echo: false,
     spam: false,
     help: true,
-    savedText: false,
-    quickNotifications: false,
-    notifyMention: false,
-    endlessTalk: false,
-    timeout: false,
-    chatColor: false
+    notifyMention: false
 };
 
 var firebase = {
@@ -34,24 +29,26 @@ module.exports = {
     botID: null,
     botNameLength: null,
     firebaseOn: false,
+    continue: true,
     pandoraEnabled: false,
     isMuted: false,
+    nextScheduledMessageNotif: true,
     godMode: false,
+    reminders: false,
     devMode: false,
     ignoreArray: null,
     sBase: null,
     b: featureBooleans,
     f: firebase,
-    setAll: function(v) {
-        for (var b in featureBooleans) {
-            featureBooleans[b] = v;
-        }
-    },
     contains: function(message, value) {
         return (message.toString().toLowerCase().indexOf(value.toString().toLowerCase()) != -1);
     },
     wip: function(api, message) {
         api.sendMessage('This function is currently WIP', message.threadID);
+    },
+    quotes: function(s) {
+        s = '"' + s + '"';
+        return s;
     }
 
 

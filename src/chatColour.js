@@ -7,6 +7,9 @@ var colorSuggestionName = '';
 var colorList = ['#0084ff', '#44bec7', '#fa3c4c', '#d696bb', '#6699cc', '#13cf13', '#ff7e29', '#e68585', '#7646ff', '#20cef5', '#ff5ca1'];
 
 function chatColorChange(api, message, input) {
+    if (input.slice(0, 1) != '#') {
+      return;
+    }
     var hex = 'placeholder';
     if (input.slice(1) == 'random') {
         var index = Math.floor(Math.random() * (colorList.length - 1)); //min value is 0, max value is inclusive

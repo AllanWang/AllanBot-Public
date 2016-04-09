@@ -3,8 +3,19 @@ var v = require('./globalVariables');
 var f = require('./firebase');
 var basic = require('./basic');
 
+function endlessTalkMe(api, message, input) {
+    if (input != '--me') {
+        return;
+    }
+    api.getUserInfo(message.senderID, function(err, ret) {
+        if (err) return console.error(err);
+        var name = ret[message.senderID].firstName;
+        f.setData(api, message, v.f.Endless.child(message.threadID).child(message.senderID), name, '@' + name + ' how are you?');
+    });
+}
+
 function endlessTalk(api, message, name) {
-    if (message.body.slice(0, 3) != '@a2') return false;
+    if (message.body.slice(0, v.botNameLength + 2) != ('@' + v.botNameL + '2')) return false;
     if (!v.b.endlessTalk) {
         log.info('endlessTalk is not enabled');
         return false;
@@ -54,6 +65,7 @@ function endlessTalkInAction(api, message) {
 
 
 module.exports = {
+    endlessTalkMe: endlessTalkMe,
     endlessTalk: endlessTalk,
     endlessTalkInAction: endlessTalkInAction
 }
