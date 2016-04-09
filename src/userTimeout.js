@@ -13,8 +13,8 @@ function afterRestart(api, message) {
                 }
                 var thread = t.toString().slice(0, i);
                 var id = t.toString().slice(i + 1);
-                api.sendMessage('I was restarted; adding back ' + sBase.boolean.timeout[t] + '.', thread);
-                userUnTimeout(api, message, id, sBase.boolean.timeout[t], thread);
+                api.sendMessage('I was restarted; adding back ' + v.sBase.boolean.timeout[t] + '.', thread);
+                userUnTimeout(api, message, id, v.sBase.boolean.timeout[t], thread);
             }
         }
 
