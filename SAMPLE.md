@@ -30,7 +30,7 @@ login({
 
     api.setOptions({ //for the facebook-chat-api
         selfListen: true, //necessary for certain functions such as superuser options
-        logLevel: 'info'
+        logLevel: 'warn' //the facebook-chat-api and allanbot use a lot of logs at the info level; if you aren't developing, you may want to hide those logs
     });
 
     allanbot.setOptions({ //for your bot
@@ -41,9 +41,9 @@ login({
         myID: 123456789, //ID of your own account (if it is different from that of the bot)
         myName: 'Bob',
         devArray: [dev1ID, dev2ID], //These people will have devMode; this and the next two are all arrays
-        masterArray: [myID], //Preferably, you'd give yourself full power :)
+        masterArray: [myID], //Preferably, you'd give yourself full power :); everyone here also has devMode
         ignoreArray: [anotherBotID], //Most likely another bot that has auto responses, or fake accounts; these IDs will be ignored for some functions
-        pandoraID: 'PANDORA ID' //This is a set of characters that define your pandoraBot; if none is provided, a Mitsuku chatbot will be used
+        pandoraID: 'PAND0RA 1D' //This is a set of characters that define your pandoraBot; if none is provided, a Mitsuku chatbot will be used
     });
 
     allanbot.enableFeatures({ //Everything here should be true or false
