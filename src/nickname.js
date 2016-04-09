@@ -11,6 +11,7 @@ function yesNoNickname(api, message) {
 }
 
 function changeNickname(api, message, t) {
+    v.continue = false;
     if (t) { //restore nicknames
         try {
             if (v.sBase.nicknames[message.threadID]) {

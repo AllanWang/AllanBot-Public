@@ -7,6 +7,7 @@ function endlessTalkMe(api, message, input) {
     if (input != '--me') {
         return;
     }
+    v.continue = false;
     api.getUserInfo(message.senderID, function(err, ret) {
         if (err) return console.error(err);
         var name = ret[message.senderID].firstName;
@@ -15,11 +16,8 @@ function endlessTalkMe(api, message, input) {
 }
 
 function endlessTalk(api, message, name) {
-    if (message.body.slice(0, v.botNameLength + 2) != ('@' + v.botNameL + '2')) return false;
-    if (!v.b.endlessTalk) {
-        log.info('endlessTalk is not enabled');
-        return false;
-    }
+    if (message.body.slice(0, v.botNameLength + 2) != ('@' + v.botNameL + '2')) return;
+    v.continue = false;
     name = name.trim();
     var nameOrig = name;
     name = name.toLowerCase();
@@ -42,25 +40,22 @@ function endlessTalk(api, message, name) {
             });
         }
     });
-    return true;
 }
 
 function endlessTalkInAction(api, message) {
-    if (!v.b.endlessTalk) return false;
     try {
         if (v.sBase.boolean.endless_talk[message.threadID][message.senderID]) {
+            v.continue = false;
             var name = v.sBase.boolean.endless_talk[message.threadID][message.senderID];
             if (message.body.toLowerCase() == 'stop') {
                 f.setData(api, message, v.f.Endless.child(message.threadID).child(message.senderID), null, "Okay " + name + ", I'll stop.");
             } else {
                 basic.respondRequest(api, message, message.body, '@' + name + ' ');
             }
-            return true;
         }
     } catch (err) {
         //Do nothing, endlessTalk is not enabled
     }
-    return false;
 }
 
 

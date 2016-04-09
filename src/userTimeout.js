@@ -2,11 +2,33 @@ var log = require("npmlog");
 var v = require('./globalVariables');
 var f = require('./firebase');
 
+function afterRestart(api, message) {
+    try {
+        if (v.sBase.boolean.timeout) {
+            for (var t in v.sBase.boolean.timeout) {
+                var i = t.toString().indexOf('_');
+                if (i == -1) {
+                    api.sendMessage('"_" not found in the timeout key; first run stopping', v.myID);
+                    return;
+                }
+                var thread = t.toString().slice(0, i);
+                var id = t.toString().slice(i + 1);
+                api.sendMessage('I was restarted; adding back ' + sBase.boolean.timeout[t] + '.', thread);
+                userUnTimeout(api, message, id, sBase.boolean.timeout[t], thread);
+            }
+        }
+
+    } catch (err) {
+        //no one is still banned; carry no
+    }
+}
+
 function userTimeout(api, message, id, name) {
     if (!v.firebaseOn) {
         log.error('firebase is not enabled, see initializeFirebase');
         return;
     }
+    v.continue = false;
     if (id == v.botID) {
         api.sendMessage("Sorry, I don't want to ban myself.", message.threadID);
         return;
@@ -29,6 +51,7 @@ function userTimeout(api, message, id, name) {
 }
 
 function userUnTimeout(api, message, id, name, thread) {
+    v.continue = false;
     api.addUserToGroup(id, thread, function callback(err) {
         if (err) { //TODO see if this is fixed; api issue
             // api.sendMessage("uh... I can't add " + name + " back", message.threadID);
@@ -44,6 +67,7 @@ function userUnTimeout(api, message, id, name, thread) {
 }
 
 module.exports = {
+    afterRestart: afterRestart,
     userTimeout: userTimeout,
     userUnTimeout: userUnTimeout
 }

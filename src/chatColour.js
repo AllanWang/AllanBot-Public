@@ -8,7 +8,7 @@ var colorList = ['#0084ff', '#44bec7', '#fa3c4c', '#d696bb', '#6699cc', '#13cf13
 
 function chatColorChange(api, message, input) {
     if (input.slice(0, 1) != '#') {
-      return;
+        return;
     }
     var hex = 'placeholder';
     if (input.slice(1) == 'random') {
@@ -49,18 +49,16 @@ function chatColorChange(api, message, input) {
 function colorSuggestionListener(api, message) {
     if (message.senderID == colorSuggestionBoolean) {
         if (message.body.slice(0, 1) == '#') {
-            log.info('got to here');
+            v.continue = false;
             if (/^#[0-9A-F]{6}$/i.test(message.body)) {
                 f.setData(api, message, v.f.ColorSuggestions.child(message.threadID).child(colorSuggestionName), message.body, 'Suggestion saved; thanks!');
                 chatColorChange(api, message, message.body);
-                return true;
             } else {
                 api.sendMessage("That isn't a valid hex color.", message.threadID);
             }
         }
         colorSuggestionBoolean = 0;
     }
-    return false;
 }
 
 //RGB COLOR LIBRARY

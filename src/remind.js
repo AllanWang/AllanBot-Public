@@ -8,8 +8,9 @@ var scheduledMessageKey = 'key';
 
 function setTimezone(api, message) {
     if (message.body.slice(0, 4) != 'UTC ') {
-        return false;
+        return;
     }
+    v.continue = false;
     var offset = parseInt(message.body.slice(4));
     if (isNaN(offset)) {
         api.sendMessage('That is an invalid timezone offset.', message.threadID);
@@ -19,29 +20,29 @@ function setTimezone(api, message) {
         }
         f.setData(api, message, v.f.TimeZone.child(message.senderID), offset, 'Timezone saved! \nYour current time is: ' + moment(Date.now()).utcOffset(offset).format('YYYY-MM-DD HH:mm:ss') + '\n(If this is wrong, you can set it again.)');
     }
-    return true;
 }
 
 function createTimeNotification(api, message) { //schedule
     if (message.body.slice(0, 7).toLowerCase() != 'remind ') {
-        return false;
+        return;
     }
     var content = message.body.slice(7);
     if (!v.contains(content, '@') || !v.contains(content, ':')) {
-        return false;
+        return;
     }
     log.info('creating time notif');
+    v.continue = false;
     var offset = 0;
     try {
         if (v.sBase.timezone_offset[message.senderID]) {
             offset = v.sBase.timezone_offset[message.senderID];
         } else {
             api.sendMessage("I don't know what timezone you are in. Please tell me your time offset in the format UTC [offset] and then resend your reminder request.\n(EST is 'UTC -5'; PST is 'UTC -8')", message.threadID);
-            return true;
+            return;
         }
     } catch (err) {
         api.sendMessage("I don't know what timezone you are in. Please tell me your time offset in the format UTC [offset] and then resend your reminder request.\n(EST is 'UTC -5'; PST is 'UTC -8')", message.threadID);
-        return true;
+        return;
     }
     var anonymous = false;
     var at = content.indexOf('@');
@@ -66,7 +67,7 @@ function createTimeNotification(api, message) { //schedule
     } else {
         createTimeNotification2(api, message, content, offset, message.threadID, name);
     }
-    return true;
+    return;
 
 }
 

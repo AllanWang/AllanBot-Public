@@ -1,7 +1,6 @@
 var rp = require('request-promise');
 var xml2js = require('xml2js');
 var pandoraID;
-var mitsukuMode = true;
 var m = require('mitsuku-api')();
 var log = require("npmlog");
 var v = require('./globalVariables');
@@ -11,28 +10,22 @@ function echo(api, message, input) {
 }
 
 function spam(api, message) {
-    var i = 1;
     for (var i = 0; i < 25; i++) {
         setTimeout(function() {
             if (!v.isMuted) {
-                var text1 = Array(11).join((Math.random().toString(36) + '00000000000000000').slice(2, 18)).slice(0, 10);
-                var text2 = Array(11).join((Math.random().toString(36) + '00000000000000000').slice(2, 18)).slice(0, 10);
-                var text3 = Array(11).join((Math.random().toString(36) + '00000000000000000').slice(2, 18)).slice(0, 10);
-                var text4 = Array(11).join((Math.random().toString(36) + '00000000000000000').slice(2, 18)).slice(0, 10);
-                var text5 = Array(11).join((Math.random().toString(36) + '00000000000000000').slice(2, 18)).slice(0, 10);
-                var text = text1 + "\n" + text2 + "\n" + text3 + "\n" + text4 + "\n" + text5;
+                var text = '';
+                for (var j = 0; j < 5; j++) {
+                    text += Array(11).join((Math.random().toString(36) + '00000000000000000').slice(2, 18)).slice(0, 10) + '\n';
+                }
                 api.sendMessage(text, message.threadID);
             } else {
                 clearTimeout();
             }
-        }, i * 500);
+        }, 500);
     }
 }
 
 function notifyMention(api, message) {
-    if (!v.b.notifyMention) {
-        return;
-    }
     if (!v.myName) {
         log.warn('Name not set; check "myName"');
         return;
@@ -51,12 +44,12 @@ function notifyMention(api, message) {
 function enablePandora(id) {
     pandoraID = id;
     v.pandoraEnabled = true;
-    mitsukuMode = false;
+    v.mitsukuMode = false;
 }
 
 function respondRequest(api, message, input, prefix) {
     if (v.isMuted) return;
-    if (!mitsukuMode && v.pandoraEnabled) {
+    if (!v.mitsukuMode && v.pandoraEnabled) {
         try {
             pandoraRequest(api, message, input, prefix);
             return;
@@ -77,7 +70,7 @@ function pandoraRequest(api, message, input, prefix) {
         });
     }).catch(function(error) {
         api.sendMessage('Pandora bot is down now. Switching to Mitsuku', message.threadID);
-        mitsukuMode = true;
+        v.mitsukuMode = true;
         log.error('------------ PANDORA ERROR ------------\n', error);
     });
 }
@@ -88,7 +81,7 @@ function mitsukuRequest(api, message, input, prefix) {
         m.send(input.replace(/[v.botName]/ig, 'Mitsuku'))
             .then(function(response) {
                 response = (response + '').replace(/mitsuku/ig, v.botName); //renaming the bot :)
-                log.info(prefix + 'Replying: ' + response);
+                log.info(prefix + 'Replying M:', response);
                 api.sendMessage(prefix + response, message.threadID);
             });
     } catch (err) {

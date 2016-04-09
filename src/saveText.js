@@ -8,6 +8,7 @@ function saveText(api, message, input) {
         log.error('firebase is not enabled, see initializeFirebase');
         return;
     }
+    v.continue = false;
     input = moment.utc().format('MM/DD/YYYY') + ": " + input;
     try {
         input = v.sBase.savedMessages[message.threadID][message.senderID] + "\n" + input;
@@ -23,6 +24,7 @@ function getSavedText(api, message) {
         log.error('firebase is not enabled, see initializeFirebase');
         return;
     }
+    v.continue = false;
     try {
         if (v.sBase.savedMessages[message.threadID][message.senderID]) {
             api.sendMessage('Saved text:\n\n' + v.sBase.savedMessages[message.threadID][message.senderID], message.threadID);

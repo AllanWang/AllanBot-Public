@@ -17,6 +17,7 @@ function createNotifyData(api, message) {
     //quick notify
     if ((!v.isMuted || v.godMode) && message.threadID != v.myID) {
         if (message.body.slice(0, 1) == '@' && message.body.length > 5 && message.body.indexOf(":") > 1) {
+            v.continue = false;
             try {
                 if (v.sBase.boolean.quick_notify[message.senderID]) {
                     addnotifyData(api, message);
@@ -26,10 +27,8 @@ function createNotifyData(api, message) {
             } catch (err) {
                 api.sendMessage('To enable quick notifications, type "@' + v.botNameL + ' --eqn"', message.threadID);
             }
-            return true;
         }
     }
-    return false;
 }
 
 function addnotifyData(api, message) {

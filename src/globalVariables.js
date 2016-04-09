@@ -31,6 +31,7 @@ module.exports = {
     firebaseOn: false,
     continue: true,
     pandoraEnabled: false,
+    mitsukuMode: true,
     isMuted: false,
     nextScheduledMessageNotif: true,
     godMode: false,

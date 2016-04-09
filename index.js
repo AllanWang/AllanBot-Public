@@ -11,7 +11,8 @@ var ab = [
     'quickNotifications',
     'userTimeout',
     'remind',
-    'nickname'
+    'nickname',
+    'indirect'
 ]
 
 ab.map(function(sub) {
@@ -27,6 +28,7 @@ var api;
 //Extra permissions
 var masterArray = [];
 var devArray = [];
+var firstRun = true;
 
 var extraOptions = [ //all of these values must be under globalVariables as well
     'myID', 'myName', 'botID', 'ignoreArray'
@@ -151,22 +153,57 @@ function listen(message) {
     }
 
     //Listeners go here
-    ab.quickNotifications.notifyData(api, message); //sends notification if it exists
 
-    ab.basic.notifyMention(api, message); //notifies main user on mention
-
-    if (ab.remind.setTimezone(api, message)) return;
-
-    if (ab.remind.createTimeNotification(api, message)) return;
-
-    if (ab.chatColour.colorSuggestionListener(api, message)) return;
-
-    if (ab.quickNotifications.createNotifyData(api, message)) return;
-
-    if (ab.endlessTalk.endlessTalkInAction(api, message)) return;
+    if (firstRun) { ///first run
+        if (v.b.userTimeout) ab.userTimeout.afterRestart(api, message);
+        firstRun = false;
+    }
 
     if (message.senderID == v.botID) {
         return; //stop listening to bot
+    }
+
+    if (v.b.quickNotifications) ab.quickNotifications.notifyData(api, message); //sends notification if it exists
+
+    if (v.b.notifyMention) ab.basic.notifyMention(api, message); //notifies main user on mention
+
+    if (v.b.indirect) {
+        ab.indirect.messageInWaiting(api, message);
+        ab.indirect.saveConversationList(api, message);
+    }
+
+    var count1 = -1;
+    listeners:
+        while (v.continue) {
+            count1++;
+            switch (count1) {
+                case 0:
+                    if (v.b.remind) ab.remind.setTimezone(api, message);
+                    break;
+                case 1:
+                    if (v.b.remind) ab.remind.createTimeNotification(api, message);
+                    break;
+                case 2:
+                    if (v.b.chatColor) ab.chatColour.colorSuggestionListener(api, message);
+                    break;
+                case 3:
+                    if (v.b.quickNotifications) ab.quickNotifications.createNotifyData(api, message);
+                    break;
+                case 4:
+                    if (v.b.endlessTalk) ab.endlessTalk.endlessTalkInAction(api, message);
+                    break;
+                default:
+                    break listeners;
+            }
+        }
+
+    if (!v.continue) return;
+
+    if (message.threadID == v.myID) {
+        if (v.b.indirect) {
+            ab.indirect.distantMessages(api, message);
+            if (message.body == '--map') ab.indirect.printConvoMap(api); //TODO check
+        }
     }
     //input checker
     var input = '';
@@ -179,21 +216,34 @@ function listen(message) {
     }
     //godMode stuff
     if (v.godMode) {
-        if (ab.endlessTalk.endlessTalk(api, message)) return;
+        var count2 = -1;
+        masterFeatures:
+            while (v.continue) {
+                count2++;
+                switch (count2) {
+                    case 0:
+                        if (v.b.endlessTalk) ab.endlessTalk.endlessTalk(api, message);
+                        break;
+                    default:
+                        break masterFeatures;
+                }
+            }
+        if (!v.continue) return;
     }
 
     //global stuff
 
     // if (v.godMode) log.info('checking input');
     //Input stuff goes here
+
     if (input) {
         log.info('Input', input);
 
-        var count2 = -1;
+        var count3 = -1;
         while (v.continue) {
-            count2++;
+            count3++;
             // log.info('count2', count2);
-            switch (count2) {
+            switch (count3) {
                 case 0:
                     if (v.godMode) ab.basic.muteToggle(api, message);
                     break;
@@ -268,19 +318,28 @@ function listen(message) {
                     break;
                 case 7:
                     if (v.b.nickname) ab.nickname.changeNicknameBasic(api, message, input);
-
                     break;
                 case 8:
                     if (v.b.chatColour) ab.chatColour.chatColorChange(api, message, input);
-
                     break;
                 case 9:
                     if (v.b.endlessTalk) ab.endlessTalk.endlessTalkMe(api, message, input);
                     break;
                 case 10:
-                    if (v.b.talkBack) ab.basic.respondRequest(api, message, input);
+                    if (v.pandoraEnabled) {
+                        if (input == '--mitsuku') {
+                            v.continue = false;
+                            v.mitsukuMode = true;
+                            api.sendMessage('I will now respond through Mitsuku.', message.threadID);
+                        } else if (input == '--pandora') {
+                            v.continue = false;
+                            v.mitsukuMode = false;
+                            api.sendMessage('I will now respond through Pandora.', message.threadID);
+                        }
+                    }
                     break;
                 default:
+                    if (v.b.talkBack) ab.basic.respondRequest(api, message, input);
                     return;
             }
         }
