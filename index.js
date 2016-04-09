@@ -21,14 +21,16 @@ ab.map(function(sub) {
     ab[sub] = require('./src/' + sub);
 });
 
-
-
 ///FACEBOOK API STUFF - will be changed via setOptions
 var api;
 
 //Extra permissions
 var masterArray = [];
 var devArray = [];
+
+var extraOptions = [ //all of these values must be under globalVariables as well
+    'myID', 'myName', 'botID', 'ignoreArray'
+]
 
 function setOptions(options) {
     Object.keys(options).map(function(key) {
@@ -41,15 +43,6 @@ function setOptions(options) {
                 v.botName = n;
                 v.botNameLength = n.length;
                 v.botNameL = n.toLowerCase();
-                break;
-            case 'botID':
-                v.botID = options.botID;
-                break;
-            case 'myID':
-                v.myID = options.myID;
-                break;
-            case 'myName':
-                v.myName = options.myName;
                 break;
             case 'api':
                 api = options.api;
@@ -67,11 +60,12 @@ function setOptions(options) {
             case 'devArray':
                 devArray = options.devArray;
                 break;
-            case 'ignoreArray':
-                v.ignoreArray = options.ignoreArray;
-                break;
             default:
-                log.warn('Unrecognized option given to setOptions', key);
+                if (extraOptions.indexOf(key) != -1) {
+                    v[key] = options[key];
+                } else {
+                    log.warn('Unrecognized option given to setOptions', key);
+                }
                 break;
         }
     });
@@ -156,10 +150,10 @@ function listen(message) {
         log.info('user has devMode');
     }
 
-    //Listeners go here   SNR = should not return
-    ab.quickNotifications.notifyData(api, message); //SNR: sends notification if it exists
+    //Listeners go here
+    ab.quickNotifications.notifyData(api, message); //sends notification if it exists
 
-    ab.basic.notifyMention(api, message); //SNR: notifies main user on mention
+    ab.basic.notifyMention(api, message); //notifies main user on mention
 
     if (ab.remind.setTimezone(api, message)) return;
 
@@ -194,65 +188,102 @@ function listen(message) {
     //Input stuff goes here
     if (input) {
         log.info('Input', input);
-        if (v.godMode) {
-            if (ab.basic.muteToggle(api, message)) return;
-        }
-        if (v.b.saveText) {
-            if (input.slice(0, 7) == '--save ' && input.length > 7) {
-                ab.saveText.saveText(api, message, input.slice(7));
-                return;
-            } else if (input == '--saved') {
-                ab.saveText.getSavedText(api, message);
-                return;
-            } else if (input == '--erase') {
-                f.setData(api, message, v.f.Saved.child(message.threadID).child(message.senderID), null, 'Erased saved text');
-                return;
-            }
-        }
 
-        if (v.b.quickNotifications) {
-            if (input.toLowerCase() == '--eqn') {
-                f.setData(api, message, v.f.QN.child(message.senderID), true, 'Quick notifications enabled.\nYou only need to do this once until you disable it.');
-                return;
-            } else if (input.toLowerCase() == '--dqn') {
-                f.setData(api, message, v.f.QN.child(message.senderID), null, 'Quick notifications disabled.');
-                return;
-            }
-        }
+        var count2 = -1;
+        while (v.continue) {
+            count2++;
+            // log.info('count2', count2);
+            switch (count2) {
+                case 0:
+                    if (v.godMode) ab.basic.muteToggle(api, message);
+                    break;
+                case 1:
+                    if (v.b.saveText) {
+                        if (input.slice(0, 7) == '--save ' && input.length > 7) {
+                            ab.saveText.saveText(api, message, input.slice(7));
+                            v.continue = false;
+                        } else if (input == '--saved') {
+                            ab.saveText.getSavedText(api, message);
+                            v.continue = false;
+                        } else if (input == '--erase') {
+                            f.setData(api, message, v.f.Saved.child(message.threadID).child(message.senderID), null, 'Erased saved text');
+                            v.continue = false;
+                        }
+                    }
+                    break;
+                case 2:
+                    if (v.b.quickNotifications) {
+                        if (input.toLowerCase() == '--eqn') {
+                            f.setData(api, message, v.f.QN.child(message.senderID), true, 'Quick notifications enabled.\nYou only need to do this once until you disable it.');
+                            v.continue = false;
+                        } else if (input.toLowerCase() == '--dqn') {
+                            f.setData(api, message, v.f.QN.child(message.senderID), null, 'Quick notifications disabled.');
+                            v.continue = false;
+                        }
+                    }
+                    break;
+                case 3:
+                    if (v.b.spam && input == '--spam') {
+                        if (v.devMode) {
+                            ab.basic.spam(api, message);
+                        } else {
+                            api.sendMessage('You do not have the power to do this.', message.threadID);
+                        }
+                        v.continue = false;
+                    }
+                    break;
+                case 4:
+                    if (v.b.help && input == '--help') { //TODO add
+                        return v.wip(api, message);
+                        help(api, message);
+                        v.continue = false;
+                    }
+                    break;
+                case 5:
+                    if (v.b.echo && input.slice(0, 7) == '--echo ' && input.length > 7) {
+                        var s = input.slice(7);
+                        if (!v.godMode) { //TODO add these things
+                            if (s.slice(0, 1) == '$') {
+                                api.sendMessage('You cannot run commands via echoing', message.threadID);
+                                v.continue = false;
+                                return;
+                            } else if (s.slice(0, v.botNameLength + 1).toLowerCase() == '@' + v.botNameL) {
+                                api.sendMessage("I don't want to echo myself.", message.threadID);
+                                v.continue = false;
+                                return;
+                            }
+                        }
+                        ab.basic.echo(api, message, s);
+                        v.continue = false;
+                    }
+                    break;
+                case 6:
+                    if (v.b.userTimeout && input == '!!!') {
+                        api.getUserInfo(message.senderID, function(err, ret) {
+                            if (err) return console.error(err);
+                            ab.userTimeout.userTimeout(api, message, message.senderID, ret[message.senderID].name);
+                        });
+                        v.continue = false;
+                    }
+                    break;
+                case 7:
+                    if (v.b.nickname) ab.nickname.changeNicknameBasic(api, message, input);
 
-        if (v.b.spam && input == '--spam') {
-            if (v.devMode) {
-                ab.basic.spam(api, message);
-            } else {
-                api.sendMessage('You do not have the power to do this.', message.threadID);
-            }
-        } else if (v.b.help && input == '--help') { //TODO add
-            return v.wip(api, message);
-            help(api, message);
-        } else if (v.b.echo && input.slice(0, 7) == '--echo ' && input.length > 7) {
-            var s = input.slice(7);
-            if (!v.godMode) { //TODO add these things
-                if (s.slice(0, 1) == '$') {
-                    api.sendMessage('You cannot run commands via echoing', message.threadID);
+                    break;
+                case 8:
+                    if (v.b.chatColour) ab.chatColour.chatColorChange(api, message, input);
+
+                    break;
+                case 9:
+                    if (v.b.endlessTalk) ab.endlessTalk.endlessTalkMe(api, message, input);
+                    break;
+                case 10:
+                    if (v.b.talkBack) ab.basic.respondRequest(api, message, input);
+                    break;
+                default:
                     return;
-                } else if (s.slice(0, v.botNameLength + 1).toLowerCase() == '@' + v.botNameL) {
-                    api.sendMessage("I don't want to echo myself.", message.threadID);
-                    return;
-                }
             }
-            ab.basic.echo(api, message, s);
-        } else if (v.b.userTimeout && input == '!!!') {
-            api.getUserInfo(message.senderID, function(err, ret) {
-                if (err) return console.error(err);
-                ab.userTimeout.userTimeout(api, message, message.senderID, ret[message.senderID].name);
-            });
         }
-
-        if (v.b.nickname) ab.nickname.changeNicknameBasic(api, message, input);
-        if (v.b.chatColour) ab.chatColour.chatColorChange(api, message, input);
-        if (v.b.endlessTalk) ab.endlessTalk.endlessTalkMe(api, message, input);
-        if (v.b.talkBack && v.continue) ab.basic.respondRequest(api, message, input);
-
     }
 }
 

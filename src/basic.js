@@ -104,7 +104,7 @@ function muteToggle(api, message) {
         } else {
             api.sendMessage(v.botName + ' is already muted.', message.threadID);
         }
-        return true;
+        v.continue = false;
     } else if (v.contains(message.body, '--unmute')) {
         if (v.isMuted) {
             v.isMuted = false;
@@ -112,9 +112,8 @@ function muteToggle(api, message) {
         } else {
             api.sendMessage(v.botName + ' is already unmuted.', message.threadID);
         }
-        return true;
+        v.continue = false;
     }
-    return false;
 }
 
 module.exports = {
