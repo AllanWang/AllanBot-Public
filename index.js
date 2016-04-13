@@ -12,7 +12,8 @@ var ab = [
     'userTimeout',
     'remind',
     'nickname',
-    'indirect'
+    'indirect',
+    'translate'
 ]
 
 ab.map(function(sub) {
@@ -153,6 +154,11 @@ function listen(message) {
     }
 
     //Listeners go here
+    // if (v.godMode) {
+    //     ab.translate.translateRequest('auto', 'fr', message.body, function callback(err, result) {
+    //         api.sendMessage(result, message.threadID);
+    //     });
+    // }
 
     if (firstRun) { ///first run
         if (v.b.userTimeout) ab.userTimeout.afterRestart(api, message);
@@ -178,18 +184,9 @@ function listen(message) {
             count1++;
             switch (count1) {
                 case 0:
-                    if (v.b.remind) ab.remind.setTimezone(api, message);
-                    break;
-                case 1:
-                    if (v.b.remind) ab.remind.createTimeNotification(api, message);
-                    break;
-                case 2:
                     if (v.b.chatColor) ab.chatColour.colorSuggestionListener(api, message);
                     break;
-                case 3:
-                    if (v.b.quickNotifications) ab.quickNotifications.createNotifyData(api, message);
-                    break;
-                case 4:
+                case 1:
                     if (v.b.endlessTalk) ab.endlessTalk.endlessTalkInAction(api, message);
                     break;
                 default:
@@ -211,7 +208,7 @@ function listen(message) {
         if ((message.body.toLowerCase().slice(0, v.botNameLength + 2) == '@' + v.botNameL + ' ') && message.body.length > (v.botNameLength + 2)) {
             input = message.body.slice(v.botNameLength + 2);
         }
-    } else {
+    } else if (!v.contains(v.ignoreArray, message.threadID)) { //make sure it isn't a one on one convo with a bot
         input = message.body;
     }
     //godMode stuff
@@ -337,6 +334,15 @@ function listen(message) {
                             api.sendMessage('I will now respond through Pandora.', message.threadID);
                         }
                     }
+                    break;
+                case 11:
+                    if (v.b.quickNotifications) ab.quickNotifications.createNotifyData(api, message);
+                    break;
+                case 12:
+                    if (v.b.remind) ab.remind.setTimezone(api, message);
+                    break;
+                case 13:
+                    if (v.b.remind) ab.remind.createTimeNotification(api, message);
                     break;
                 default:
                     if (v.b.talkBack) ab.basic.respondRequest(api, message, input);
