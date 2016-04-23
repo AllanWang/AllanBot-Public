@@ -297,7 +297,7 @@ function listen(message) {
                     }
                     break;
                 case 4:
-                    if (v.b.chatTitle) ab.chatTitle.set(api, message);
+                    if (v.b.chatTitle) ab.chatTitle.set(api, message, input);
                     break;
                 case 5:
                     if (v.b.echo && input.slice(0, 7) == '--echo ' && input.length > 7) {
