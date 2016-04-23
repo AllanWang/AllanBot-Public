@@ -2,7 +2,6 @@ var featureBooleans = {
     talkBack: false,
     echo: false,
     spam: false,
-    help: true,
     notifyMention: false
 };
 

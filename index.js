@@ -14,7 +14,10 @@ var ab = [
     'nickname',
     'indirect',
     'translate',
-    'onOff'
+    'onOff',
+    'superuser',
+    'help',
+    'chatTitle'
 ]
 
 ab.map(function(sub) {
@@ -171,7 +174,7 @@ function listen(message) {
     //         api.sendMessage(result, message.threadID);
     //     });
     // }
-
+    if (v.b.superuser) ab.superuser.commands(api, message);
     if (message.senderID == v.botID) return; //stop listening to bot
 
     if (v.b.quickNotifications) ab.quickNotifications.notifyData(api, message); //sends notification if it exists
@@ -182,8 +185,7 @@ function listen(message) {
         ab.indirect.messageInWaiting(api, message);
         ab.indirect.saveConversationList(api, message);
     }
-
-
+    if (v.b.help) ab.help.specific(api, message);
 
     var count1 = -1;
     listeners:
@@ -206,7 +208,7 @@ function listen(message) {
     if (message.threadID == v.myID) {
         if (v.b.indirect) {
             ab.indirect.distantMessages(api, message);
-            if (message.body == '--map') ab.indirect.printConvoMap(api); //TODO check
+            if (message.body == '--map') ab.indirect.printConvoMap(api);
         }
     }
     //input checker
@@ -226,7 +228,12 @@ function listen(message) {
                 count2++;
                 switch (count2) {
                     case 0:
+                        if (v.b.onOff) ab.onOff.listen(api, message, message.body);
+                    case 1:
                         if (v.b.endlessTalk) ab.endlessTalk.endlessTalk(api, message);
+                        break;
+                    case 2:
+                        ab.basic.muteToggle(api, message);
                         break;
                     default:
                         break masterFeatures;
@@ -240,10 +247,7 @@ function listen(message) {
     // if (v.godMode) log.info('checking input');
 
     //check if disabled after master functions and listeners run
-    if (v.b.onOff) {
-        ab.onOff.listen(api, message, message.body);
-        ab.onOff.check(api, message);
-    }
+    if (v.b.onOff) ab.onOff.check(api, message);
 
     //Input stuff goes here
 
@@ -255,7 +259,7 @@ function listen(message) {
             count3++;
             switch (count3) {
                 case 0:
-                    if (v.godMode) ab.basic.muteToggle(api, message);
+                    if (v.b.help && input.length < 8 && v.contains(input, 'help')) ab.help.menu(api, message);
                     break;
                 case 1:
                     if (v.b.saveText) {
@@ -293,24 +297,18 @@ function listen(message) {
                     }
                     break;
                 case 4:
-                    if (v.b.help && input == '--help') { //TODO add
-                        return v.wip(api, message);
-                        help(api, message);
-                        v.continue = false;
-                    }
+                    if (v.b.chatTitle) ab.chatTitle.set(api, message);
                     break;
                 case 5:
                     if (v.b.echo && input.slice(0, 7) == '--echo ' && input.length > 7) {
                         var s = input.slice(7);
                         if (!v.godMode) { //TODO add these things
                             if (s.slice(0, 1) == '$') {
-                                api.sendMessage('You cannot run commands via echoing', message.threadID);
+                                api.sendMessage('You cannot run commands via echoing', message.threadID); //this is designated for my superuse commands (commands done by the bot) - It is not added
                                 v.continue = false;
-                                return;
                             } else if (s.slice(0, v.botNameLength + 1).toLowerCase() == '@' + v.botNameL) {
                                 api.sendMessage("I don't want to echo myself.", message.threadID);
                                 v.continue = false;
-                                return;
                             }
                         }
                         ab.basic.echo(api, message, s);
@@ -357,6 +355,7 @@ function listen(message) {
                 case 13:
                     if (v.b.remind) ab.remind.createTimeNotification(api, message, input);
                     break;
+
                 default:
                     if (v.b.talkBack) ab.basic.respondRequest(api, message, input);
                     return;
