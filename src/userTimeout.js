@@ -2,7 +2,7 @@ var log = require("npmlog");
 var v = require('./globalVariables');
 var f = require('./firebase');
 
-function afterRestart(api, message) {
+function afterRestart(api) {
     try {
         if (v.sBase.boolean.timeout) {
             for (var t in v.sBase.boolean.timeout) {
@@ -14,7 +14,7 @@ function afterRestart(api, message) {
                 var thread = t.toString().slice(0, i);
                 var id = t.toString().slice(i + 1);
                 api.sendMessage('I was restarted; adding back ' + v.sBase.boolean.timeout[t] + '.', thread);
-                userUnTimeout(api, message, id, v.sBase.boolean.timeout[t], thread);
+                userUnTimeout(api, id, v.sBase.boolean.timeout[t], thread);
             }
         }
 
@@ -46,23 +46,23 @@ function userTimeout(api, message, id, name) {
     }, 2000);
 
     setTimeout(function() {
-        userUnTimeout(api, message, id, name, message.threadID);
+        userUnTimeout(api, id, name, message.threadID);
     }, 300000);
 }
 
-function userUnTimeout(api, message, id, name, thread) {
+function userUnTimeout(api, id, name, thread) {
     v.continue = false;
     api.addUserToGroup(id, thread, function callback(err) {
         if (err) { //TODO see if this is fixed; api issue
             // api.sendMessage("uh... I can't add " + name + " back", message.threadID);
             api.sendMessage('Welcome back ' + name + '; try not to get banned again.', thread);
-            f.setData(api, message, v.f.Timeout.child(thread + '_' + id), null, null);
+            f.setDataSimple(v.f.Timeout.child(thread + '_' + id), null, null);
             return console.error(err);
             //facebook error
         }
 
         api.sendMessage('Welcome back ' + name + '; try not to get banned again.', thread);
-        f.setData(api, message, v.f.Timeout.child(thread + '_' + id), null, null);
+        f.setDataSimple(v.f.Timeout.child(thread + '_' + id), null, null);
     });
 }
 

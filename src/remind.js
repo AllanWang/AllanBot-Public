@@ -6,12 +6,12 @@ var moment = require('moment-timezone');
 var scheduledMessageTime = 0;
 var scheduledMessageKey = 'key';
 
-function setTimezone(api, message) {
-    if (message.body.slice(0, 4) != 'UTC ') {
+function setTimezone(api, message, input) {
+    if (input.slice(0, 4) != 'UTC ') {
         return;
     }
     v.continue = false;
-    var offset = parseInt(message.body.slice(4));
+    var offset = parseInt(input.slice(4));
     if (isNaN(offset)) {
         api.sendMessage('That is an invalid timezone offset.', message.threadID);
     } else {
@@ -22,11 +22,11 @@ function setTimezone(api, message) {
     }
 }
 
-function createTimeNotification(api, message) { //schedule
-    if (message.body.slice(0, 7).toLowerCase() != 'remind ') {
+function createTimeNotification(api, message, input) { //schedule
+    if (input.slice(0, 7).toLowerCase() != 'remind ') {
         return;
     }
-    var content = message.body.slice(7);
+    var content = input.slice(7);
     if (!v.contains(content, '@') || !v.contains(content, ':')) {
         return;
     }
@@ -46,20 +46,14 @@ function createTimeNotification(api, message) { //schedule
     }
     var anonymous = false;
     var at = content.indexOf('@');
-    log.info('got here tddoo');
 
     var name = '';
     name = content.slice(0, at).trim();
     content = content.slice(at + 1);
-    log.info('aaa');
 
     if (name == null || name == '') {
-        log.info('bbb');
-
         createTimeNotification2(api, message, content, offset, message.threadID, null);
     } else if (name.toLowerCase() == 'me') {
-        log.info('ccc');
-
         api.getUserInfo(message.senderID, function(err, ret) {
             if (err) return console.error(err);
             createTimeNotification2(api, message, content, offset, message.threadID, ret[message.senderID].name);
@@ -75,11 +69,9 @@ function createTimeNotification2(api, message, content, offset, threadID, name) 
     var colon = content.indexOf(':');
     var j = colon + 5
     if (colon == -1) {
-        console.log('no colon');
+        log.info('no colon');
         return;
     }
-    log.info('got here too');
-
     var inputTime = content.slice(0, j).trim(); //everything between @ and 4 chars after :
     if (!v.contains(inputTime, 'am') && !v.contains(inputTime, 'pm')) {
         j -= 2;
@@ -109,36 +101,28 @@ function createTimeNotification2(api, message, content, offset, threadID, name) 
         if (inputTime.slice(colon + 3, colon + 5).toLowerCase() == 'pm') {
             ampm = true;
             if (hour < 12) {
-                console.log('pm, adding 12 hours to ' + hour);
+                log.info('pm, adding 12 hours to ' + hour);
                 hour += 12;
-                console.log('new hours ' + hour);
+                log.info('new hours ' + hour);
             }
         } else if (inputTime.slice(colon + 3, colon + 5).toLowerCase() == 'am') {
             ampm = true;
             if (hour == 12) {
-                console.log('this is midnight');
+                log.info('this is midnight');
                 hour = 0;
             }
         }
 
         time = moment.utc();
-        console.log('time 1 ' + time.format('YYYY/MM/DD HH:mm'));
         time.hour(hour).minute(minute);
-        console.log('time 2 ' + time.format('YYYY/MM/DD HH:mm'));
-
-        console.log('original time ' + time.format('YYYY/MM/DD HH:mm'));
         time.subtract(1, 'd').subtract(offset, 'minute');
-        console.log('time with offset ' + time.format('YYYY/MM/DD HH:mm'));
 
         while (time.format('x') < Date.now()) {
             if (ampm) {
                 time.add(1, 'd');
-                console.log('time ampm ' + time);
 
             } else {
                 time.add(12, 'h');
-                console.log('time noampm ' + time);
-
             }
         }
 
@@ -178,12 +162,9 @@ function createTimeNotification2(api, message, content, offset, threadID, name) 
 }
 
 function checkTimeNotification(api) {
-    if (scheduledMessageTime == 0) {
-        return;
-    }
+    if (scheduledMessageTime == 0) return;
     if (scheduledMessageTime < Date.now()) {
         var thread = scheduledMessageKey.slice(scheduledMessageKey.indexOf('_') + 1);
-        console.log(thread);
         api.sendMessage(v.sBase.scheduled_messages[scheduledMessageKey], thread, function callback(err) {
             if (err) {
                 //getScheduledMessages takes time
@@ -193,6 +174,9 @@ function checkTimeNotification(api) {
         f.setDataSimple(v.f.SM.child(scheduledMessageKey), null, null);
     }
     getScheduledMessages();
+    setTimeout(function() {
+        checkTimeNotification(api);
+    }, 5000);
 }
 
 function getScheduledMessages() {
@@ -211,16 +195,16 @@ function getScheduledMessages() {
                 }
             }
             if (v.nextScheduledMessageNotif) {
-                console.log('next scheduled message at ' + scheduledMessageTime + '   ' + moment(parseInt(scheduledMessageTime)).format('YYYY-MM-DD HH:mm:ss'));
-                console.log('current time is ' + Date.now() + '             ' + moment().format('YYYY-MM-DD HH:mm:ss'));
-                console.log('time remaining ' + moment(scheduledMessageTime).fromNow(true));
+                log.info('next scheduled message at ' + scheduledMessageTime + '   ' + moment(parseInt(scheduledMessageTime)).format('YYYY-MM-DD HH:mm:ss'));
+                log.info('current time is ' + Date.now() + '             ' + moment().format('YYYY-MM-DD HH:mm:ss'));
+                log.info('time remaining ' + moment(scheduledMessageTime).fromNow(true));
                 v.nextScheduledMessageNotif = false;
             }
         } else {
-            console.log('nothing in getScheduledMessages');
+            log.info('nothing in getScheduledMessages');
         }
     } catch (err) {
-        console.log('getScheduledMessages error\n\n' + err);
+        log.info('getScheduledMessages error\n\n' + err);
     }
 }
 

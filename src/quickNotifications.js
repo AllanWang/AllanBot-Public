@@ -13,14 +13,14 @@ function notifyData(api, message) {
     }
 }
 
-function createNotifyData(api, message) {
+function createNotifyData(api, message, input) {
     //quick notify
     if ((!v.isMuted || v.godMode) && message.threadID != v.myID) {
-        if (message.body.slice(0, 1) == '@' && message.body.length > 5 && message.body.indexOf(":") > 1) {
+        if (input.slice(0, 1) == '@' && input.length > 5 && input.indexOf(":") > 1) {
             v.continue = false;
             try {
                 if (v.sBase.boolean.quick_notify[message.senderID]) {
-                    addnotifyData(api, message);
+                    addnotifyData(api, message, input);
                 } else {
                     api.sendMessage('To enable quick notifications, type "@' + v.botNameL + ' --eqn"', message.threadID);
                 }
@@ -31,8 +31,8 @@ function createNotifyData(api, message) {
     }
 }
 
-function addnotifyData(api, message) {
-    var fullText = message.body.slice(1);
+function addnotifyData(api, message, input) {
+    var fullText = input.slice(1);
     var i = fullText.indexOf(":");
     if (i < 1) {
         return;

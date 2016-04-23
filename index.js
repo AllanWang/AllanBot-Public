@@ -13,7 +13,8 @@ var ab = [
     'remind',
     'nickname',
     'indirect',
-    'translate'
+    'translate',
+    'onOff'
 ]
 
 ab.map(function(sub) {
@@ -109,18 +110,7 @@ function enableFeatures(options) {
                 }
                 break;
             case 'reminders':
-                v.b.reminders = options.reminders;
-                if (v.b.reminders) {
-                    setTimeout(function() {
-                        ab.remind.getScheduledMessages();
-                    }, 10000);
-                    setInterval(function() {
-                        v.nextScheduledMessageNotif = true;
-                    }, 500000);
-                    setInterval(function() {
-                        ab.remind.checkTimeNotification(api);
-                    }, 50000);
-                }
+                v.b.remind = options.reminders;
                 break;
             default:
                 if (key in v.b) {
@@ -131,9 +121,31 @@ function enableFeatures(options) {
                 break;
         }
     });
+    if (!api) {
+        log.warn('Api not set! Make sure you add it via setOptions prior to enabling bot features');
+        return;
+    }
+    if (firstRun) { ///first run, in case you use enableFeatures multiple times
+        firstRun = false;
 
+        if (v.b.userTimeout) ab.userTimeout.afterRestart(api);
+        if (v.b.remind) {
+            setTimeout(function() {
+                ab.remind.getScheduledMessages();
+            }, 3000);
+            setTimeout(function() {
+                ab.remind.checkTimeNotification(api);
+            }, 5000);
+            setInterval(function() {
+                v.nextScheduledMessageNotif = true;
+            }, 500000);
+            setInterval(function() {
+                if (!v.b.remind) return;
+                ab.remind.checkTimeNotification(api);
+            }, 50000);
+        }
+    }
     // console.log(JSON.stringify(v.b));
-
 }
 
 
@@ -160,14 +172,7 @@ function listen(message) {
     //     });
     // }
 
-    if (firstRun) { ///first run
-        if (v.b.userTimeout) ab.userTimeout.afterRestart(api, message);
-        firstRun = false;
-    }
-
-    if (message.senderID == v.botID) {
-        return; //stop listening to bot
-    }
+    if (message.senderID == v.botID) return; //stop listening to bot
 
     if (v.b.quickNotifications) ab.quickNotifications.notifyData(api, message); //sends notification if it exists
 
@@ -177,6 +182,8 @@ function listen(message) {
         ab.indirect.messageInWaiting(api, message);
         ab.indirect.saveConversationList(api, message);
     }
+
+
 
     var count1 = -1;
     listeners:
@@ -231,6 +238,13 @@ function listen(message) {
     //global stuff
 
     // if (v.godMode) log.info('checking input');
+
+    //check if disabled after master functions and listeners run
+    if (v.b.onOff) {
+        ab.onOff.listen(api, message, message.body);
+        ab.onOff.check(api, message);
+    }
+
     //Input stuff goes here
 
     if (input) {
@@ -239,7 +253,6 @@ function listen(message) {
         var count3 = -1;
         while (v.continue) {
             count3++;
-            // log.info('count2', count2);
             switch (count3) {
                 case 0:
                     if (v.godMode) ab.basic.muteToggle(api, message);
@@ -336,13 +349,13 @@ function listen(message) {
                     }
                     break;
                 case 11:
-                    if (v.b.quickNotifications) ab.quickNotifications.createNotifyData(api, message);
+                    if (v.b.quickNotifications) ab.quickNotifications.createNotifyData(api, message, input);
                     break;
                 case 12:
-                    if (v.b.remind) ab.remind.setTimezone(api, message);
+                    if (v.b.remind) ab.remind.setTimezone(api, message, input);
                     break;
                 case 13:
-                    if (v.b.remind) ab.remind.createTimeNotification(api, message);
+                    if (v.b.remind) ab.remind.createTimeNotification(api, message, input);
                     break;
                 default:
                     if (v.b.talkBack) ab.basic.respondRequest(api, message, input);
