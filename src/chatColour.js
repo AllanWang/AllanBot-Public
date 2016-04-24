@@ -6,10 +6,9 @@ var colorSuggestionBoolean = 0; //no longer a boolean but I'll keep the name.
 var colorSuggestionName = '';
 var colorList = ['#0084ff', '#44bec7', '#fa3c4c', '#d696bb', '#6699cc', '#13cf13', '#ff7e29', '#e68585', '#7646ff', '#20cef5', '#ff5ca1'];
 
-function chatColorChange(api, message, input) {
-    if (input.slice(0, 1) != '#') {
-        return;
-    }
+function change(api, message, input) {
+    if (input.slice(0, 1) != '#') return;
+    v.continue = false;
     var hex = 'placeholder';
     if (input.slice(1) == 'random') {
         var index = Math.floor(Math.random() * (colorList.length - 1)); //min value is 0, max value is inclusive
@@ -46,18 +45,17 @@ function chatColorChange(api, message, input) {
     });
 }
 
-function colorSuggestionListener(api, message) {
-    if (message.senderID == colorSuggestionBoolean) {
-        if (message.body.slice(0, 1) == '#') {
-            v.continue = false;
-            if (/^#[0-9A-F]{6}$/i.test(message.body)) {
-                f.setData(api, message, v.f.ColorSuggestions.child(message.threadID).child(colorSuggestionName), message.body, 'Suggestion saved; thanks!');
-                chatColorChange(api, message, message.body);
-            } else {
-                api.sendMessage("That isn't a valid hex color.", message.threadID);
-            }
-        }
-        colorSuggestionBoolean = 0;
+function listener(api, message) {
+    if (message.senderID != colorSuggestionBoolean) return;
+    colorSuggestionBoolean = 0;
+    if (!v.contains(message.body, '#')) return;
+    v.continue = false;
+    var c = '#' + message.body.split('#')[1];
+    if (/^#[0-9A-F]{6}$/i.test(c)) {
+        f.setData(api, message, v.f.ColorSuggestions.child(message.threadID).child(colorSuggestionName), c, 'Suggestion saved; thanks!');
+        change(api, message, c);
+    } else {
+        api.sendMessage("That isn't a valid hex color.", message.threadID);
     }
 }
 
@@ -252,6 +250,6 @@ function RGBColor(color_string) {
 
 
 module.exports = {
-    chatColorChange: chatColorChange,
-    colorSuggestionListener: colorSuggestionListener
+    change: change,
+    listener: listener
 }

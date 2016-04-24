@@ -60,6 +60,19 @@ function respondRequest(api, message, input, prefix) {
     mitsukuRequest(api, message, input, prefix);
 }
 
+function respondSwitch(api, message, input) {
+    if (!v.pandoraEnabled) return;
+    if (input == '--mitsuku') {
+        v.continue = false;
+        v.mitsukuMode = true;
+        api.sendMessage('I will now respond through Mitsuku.', message.threadID);
+    } else if (input == '--pandora') {
+        v.continue = false;
+        v.mitsukuMode = false;
+        api.sendMessage('I will now respond through Pandora.', message.threadID);
+    }
+}
+
 function pandoraRequest(api, message, input, prefix) {
     if (prefix === undefined) prefix = ''; //TODO check if necessary
     rp('http://www.pandorabots.com/pandora/talk-xml?botid=' + pandoraID + '&input=' + encodeURIComponent(input) + '&custid=' + message.threadID).then(function(response) {
@@ -115,5 +128,6 @@ module.exports = {
     enablePandora: enablePandora,
     respondRequest: respondRequest,
     notifyMention: notifyMention,
-    muteToggle: muteToggle
+    muteToggle: muteToggle,
+    respondSwitch: respondSwitch
 }

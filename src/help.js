@@ -53,9 +53,9 @@ function menu(api, message) {
     api.sendMessage(sTitle, message.threadID);
     var atbot = '"@' + v.botNameL;
     info = {
-        echo: atbot + ' --echo [text]" will have allanbot repeat that text verbatim.',
+        echo: atbot + ' --echo [text]" will have ' + v.botName + ' repeat that text verbatim.',
 
-        endlessTalk: atbot + ' --me" will get allanbot to automatically respond to you, without you having to type ' + atbot + '" in the future. You can type "stop" to disable this afterwards.',
+        endlessTalk: atbot + ' --me" will get ' + v.botName + ' to automatically respond to you, without you having to type ' + atbot + '" in the future. You can type "stop" to disable this afterwards.',
 
         saveText: atbot + ' --save xxx" will save the input xxx with a timestamp. These saved messages are specific to each conversation, and are not related to other messages you save in other messages.\
         \n' + atbot + ' --saved" will show the saved input.\n' + atbot + ' --erase" will erase the saved input.',
@@ -82,9 +82,9 @@ function menu(api, message) {
 function specific(api, message) {
     if (helpBoolean != message.senderID) return;
     helpBoolean = 0;
-    if (message.body.length > 2) return;
     v.continue = false;
     var num = parseInt(message.body);
+    if (isNaN(num)) return;
     var full = '';
     if (num == 0) {
         full = v.botName + ' is a Facebook Chat Bot that can be called by using "@' + v.botNameL + ' [message]"\n\nIt also has the following features:';

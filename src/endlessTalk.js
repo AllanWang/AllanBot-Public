@@ -3,7 +3,7 @@ var v = require('./globalVariables');
 var f = require('./firebase');
 var basic = require('./basic');
 
-function endlessTalkMe(api, message, input) {
+function me(api, message, input) {
     if (input != '--me') {
         return;
     }
@@ -15,7 +15,7 @@ function endlessTalkMe(api, message, input) {
     });
 }
 
-function endlessTalk(api, message, name) {
+function set(api, message, name) {
     if (message.body.slice(0, v.botNameLength + 2) != ('@' + v.botNameL + '2')) return;
     v.continue = false;
     name = name.trim();
@@ -42,7 +42,7 @@ function endlessTalk(api, message, name) {
     });
 }
 
-function endlessTalkInAction(api, message) {
+function inAction(api, message) {
     try {
         if (v.sBase.boolean.endless_talk[message.threadID][message.senderID]) {
             v.continue = false;
@@ -60,7 +60,7 @@ function endlessTalkInAction(api, message) {
 
 
 module.exports = {
-    endlessTalkMe: endlessTalkMe,
-    endlessTalk: endlessTalk,
-    endlessTalkInAction: endlessTalkInAction
+    me: me,
+    set: set,
+    inAction: inAction
 }

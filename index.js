@@ -193,10 +193,10 @@ function listen(message) {
             count1++;
             switch (count1) {
                 case 0:
-                    if (v.b.chatColor) ab.chatColour.colorSuggestionListener(api, message);
+                    if (v.b.chatColour) ab.chatColour.listener(api, message);
                     break;
                 case 1:
-                    if (v.b.endlessTalk) ab.endlessTalk.endlessTalkInAction(api, message);
+                    if (v.b.endlessTalk) ab.endlessTalk.inAction(api, message);
                     break;
                 default:
                     break listeners;
@@ -230,7 +230,7 @@ function listen(message) {
                     case 0:
                         if (v.b.onOff) ab.onOff.listen(api, message, message.body);
                     case 1:
-                        if (v.b.endlessTalk) ab.endlessTalk.endlessTalk(api, message);
+                        if (v.b.endlessTalk) ab.endlessTalk.set(api, message);
                         break;
                     case 2:
                         ab.basic.muteToggle(api, message);
@@ -328,23 +328,13 @@ function listen(message) {
                     if (v.b.nickname) ab.nickname.changeNicknameBasic(api, message, input);
                     break;
                 case 8:
-                    if (v.b.chatColour) ab.chatColour.chatColorChange(api, message, input);
+                    if (v.b.chatColour) ab.chatColour.change(api, message, input);
                     break;
                 case 9:
-                    if (v.b.endlessTalk) ab.endlessTalk.endlessTalkMe(api, message, input);
+                    if (v.b.endlessTalk) ab.endlessTalk.me(api, message, input);
                     break;
                 case 10:
-                    if (v.pandoraEnabled) {
-                        if (input == '--mitsuku') {
-                            v.continue = false;
-                            v.mitsukuMode = true;
-                            api.sendMessage('I will now respond through Mitsuku.', message.threadID);
-                        } else if (input == '--pandora') {
-                            v.continue = false;
-                            v.mitsukuMode = false;
-                            api.sendMessage('I will now respond through Pandora.', message.threadID);
-                        }
-                    }
+                    ab.basic.respondSwitch(api, message, input);
                     break;
                 case 11:
                     if (v.b.quickNotifications) ab.quickNotifications.createNotifyData(api, message, input);
@@ -355,7 +345,6 @@ function listen(message) {
                 case 13:
                     if (v.b.remind) ab.remind.createTimeNotification(api, message, input);
                     break;
-
                 default:
                     if (v.b.talkBack) ab.basic.respondRequest(api, message, input);
                     return;
