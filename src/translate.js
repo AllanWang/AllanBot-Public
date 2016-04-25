@@ -2,8 +2,15 @@
 var rp = require('request-promise');
 var log = require("npmlog");
 var v = require('./globalVariables');
+var invalid = ''; //will be used in the functions
 
 /** Translation helpers **/
+var langKey = ['auto', 'af', 'sq', 'am', 'ar', 'hy', 'az', 'eu', 'be', 'bn', 'bs', 'bg', 'ca', 'ceb', 'ny', 'zh-CN', 'co', 'hr', 'cs', 'da',
+    'nl', 'en', 'eo', 'et', 'tl', 'fi', 'fr', 'fy', 'gl', 'ka', 'de', 'el', 'gu', 'ht', 'ha', 'haw', 'iw', 'hi', 'hmn', 'hu',
+    'is', 'ig', 'id', 'ga', 'it', 'ja', 'jw', 'kn', 'kk', 'km', 'ko', 'ku', 'ky', 'lo', 'la', 'lv', 'lt', 'lb', 'mk', 'mg', 'ms', 'ml', 'mt', 'mi', 'mr', 'mn', 'my',
+    'ne', 'no', 'ps', 'fa', 'pl', 'pt', 'pa', 'ro', 'ru', 'sm', 'gd', 'sr', 'st', 'sn', 'sd', 'si', 'sk', 'sl', 'so', 'es', 'su', 'sw', 'sv',
+    'tg', 'ta', 'te', 'th', 'tr', 'uk', 'ur', 'uz', 'vi', 'cy', 'xh', 'yi', 'yo', 'zu'
+];
 var langMap = {
     afrikaans: 'af',
     albanian: 'sq',
@@ -112,21 +119,30 @@ var langMap = {
 
 function getLanKey(s) {
     if (s in langMap) return langMap[s];
-    return s;
+    if (langKey.indexOf(s) != -1) return s;
+    invalid = s;
+    return 'auto';
 }
 
 function printLangKey() {
     var s = 'Available languages:\n\n';
+    // var t = '\n\n';
     for (var l in langMap) {
         s += l + '   ';
+        // t += "'" + langMap[l] + "', ";
     }
     return s;
 }
 
 // Process the request
 function request(fromLang, toLang, phrase, callback) {
+    invalid = '';
     fromLang = getLanKey(fromLang);
     toLang = getLanKey(toLang);
+    if (invalid) {
+        callback(null, invalid + ' is not a valid language/key');
+        return;
+    }
     // log.info('Translating', phrase, 'from', fromLang, 'to', toLang);
     translate(fromLang, toLang, phrase)
         .then(function(result) {
@@ -176,22 +192,22 @@ function translate(fromLang, toLang, phrase) {
             sl: fromLang,
             tl: toLang,
             dt: 't',
-            q: encodeURIComponent(phrase)
-                // q: phrase
+            // q: encodeURIComponent(phrase)
+            q: phrase
         },
         headers: {
             'cache-control': 'no-cache'
         }
     };
-    log.info('url', options)
+    // log.info('url', options)
     return rp(options).then(function(response) {
         var text = response.match(/"(.*?)"/)[1];
-        text = decodeURIComponent(text.replace(/% /g, '%'));
-        try {
-            log.info('response', JSON.stringify(response));
-        } catch (err) {
-            log.warn('response not decoded');
-        }
+        // text = decodeURIComponent(text.replace(/% /g, '%'));
+        // try {
+        //     log.info('response', JSON.stringify(response));
+        // } catch (err) {
+        //     log.warn('response not decoded');
+        // }
         return text;
     });
 }
