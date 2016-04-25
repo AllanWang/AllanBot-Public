@@ -3,7 +3,7 @@ var v = require('./globalVariables');
 var helpBoolean = 0;
 var i = 0;
 
-var index = ['echo', 'endlessTalk', 'saveText', 'chatColour', 'chatTitle', 'quickNotifications', 'remind', 'nickname'];
+var index = ['saveText', 'translate', 'quickNotifications', 'remind', 'chatColour', 'chatTitle', 'nickname', 'echo', 'endlessTalk'];
 var numbers = {};
 
 var title = {
@@ -15,7 +15,8 @@ var title = {
     userTimeout: 'User timeout',
     remind: 'Reminders',
     nickname: 'Chat nicknames',
-    chatTitle: 'Chat title'
+    chatTitle: 'Chat title',
+    translate: 'Translate'
         // indirect: '',
         // translate,
 };
@@ -70,7 +71,10 @@ function menu(api, message) {
 
         nickname: atbot + ' nickname: [nickname]" will change your nickname to [nickname]; leave it blank (nickname: ) to remove your nickname',
 
-        chatTitle: atbot + ' title: [title]" will change the conversation title'
+        chatTitle: atbot + ' title: [title]" will change the conversation title',
+
+        translate: atbot + ' -t [language] [text]" will translate [text]. [language] may either be the language you are translating to, or [input]:[output] (ie @' + v.botNameL + '-t french:russian bonjour)\
+        \n' + atbot + ' -t" will display all the available languages'
     };
 
     if (v.devMode) {

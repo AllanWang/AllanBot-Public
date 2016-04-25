@@ -115,8 +115,16 @@ function getLanKey(s) {
     return s;
 }
 
+function printLangKey() {
+    var s = 'Available languages:\n\n';
+    for (var l in langMap) {
+        s += l + '   ';
+    }
+    return s;
+}
+
 // Process the request
-function translateRequest(fromLang, toLang, phrase, callback) {
+function request(fromLang, toLang, phrase, callback) {
     fromLang = getLanKey(fromLang);
     toLang = getLanKey(toLang);
     // log.info('Translating', phrase, 'from', fromLang, 'to', toLang);
@@ -131,6 +139,11 @@ function translateRequest(fromLang, toLang, phrase, callback) {
 }
 
 function parse(api, message, input) {
+    if (input.trim() == '-t') {
+        v.continue = false;
+        api.sendMessage(printLangKey(), message.threadID);
+        return;
+    }
     if (input.slice(0, 3) != '-t ') return;
     v.continue = false;
     input = input.slice(3).trim();
@@ -144,7 +157,7 @@ function parse(api, message, input) {
         toLang = l;
     }
     // log.info('from', fromLang, 'to', toLang, 'c', input.slice(input.indexOf(' ') + 1));
-    translateRequest(fromLang, toLang, input.slice(input.indexOf(' ') + 1), function callback(err, response) {
+    request(fromLang, toLang, input.slice(input.indexOf(' ') + 1), function callback(err, response) {
         api.sendMessage(response, message.threadID);
     });
 
@@ -184,6 +197,6 @@ function translate(fromLang, toLang, phrase) {
 }
 
 module.exports = {
-    translateRequest: translateRequest,
+    request: request,
     parse: parse
 }

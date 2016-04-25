@@ -169,11 +169,6 @@ function listen(message) {
     }
 
     //Listeners go here
-    // if (v.godMode) {
-    //     ab.translate.translateRequest('auto', 'fr', message.body, function callback(err, result) {
-    //         api.sendMessage(result, message.threadID);
-    //     });
-    // }
     if (v.b.superuser) ab.superuser.commands(api, message);
     if (message.senderID == v.botID) return; //stop listening to bot
 
