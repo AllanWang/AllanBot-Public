@@ -6,10 +6,12 @@ var log = require("npmlog");
 var v = require('./globalVariables');
 
 function echo(api, message, input) {
+  v.continue = false;
     api.sendMessage(input, message.threadID);
 }
 
 function spam(api, message) {
+  v.continue = false;
     for (var i = 0; i < 25; i++) {
         setTimeout(function() {
             if (!v.isMuted) {

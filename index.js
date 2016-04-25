@@ -312,16 +312,15 @@ function listen(message) {
                             }
                         }
                         ab.basic.echo(api, message, s);
-                        v.continue = false;
                     }
                     break;
                 case 6:
                     if (v.b.userTimeout && input == '!!!') {
+                        v.continue = false;
                         api.getUserInfo(message.senderID, function(err, ret) {
                             if (err) return console.error(err);
                             ab.userTimeout.userTimeout(api, message, message.senderID, ret[message.senderID].name);
                         });
-                        v.continue = false;
                     }
                     break;
                 case 7:
@@ -344,6 +343,9 @@ function listen(message) {
                     break;
                 case 13:
                     if (v.b.remind) ab.remind.createTimeNotification(api, message, input);
+                    break;
+                case 14:
+                    if (v.b.translate) ab.translate.parse(api, message, input);
                     break;
                 default:
                     if (v.b.talkBack) ab.basic.respondRequest(api, message, input);
