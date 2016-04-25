@@ -119,7 +119,7 @@ function getLanKey(s) {
 function translateRequest(fromLang, toLang, phrase, callback) {
     fromLang = getLanKey(fromLang);
     toLang = getLanKey(toLang);
-    log.info('Translating', phrase, 'from', fromLang, 'to', toLang);
+    // log.info('Translating', phrase, 'from', fromLang, 'to', toLang);
     translate(fromLang, toLang, phrase)
         .then(function(result) {
             callback(null, result);
@@ -143,7 +143,7 @@ function parse(api, message, input) {
     } else {
         toLang = l;
     }
-    log.info('from', fromLang, 'to', toLang, 'c', input.slice(input.indexOf(' ') + 1));
+    // log.info('from', fromLang, 'to', toLang, 'c', input.slice(input.indexOf(' ') + 1));
     translateRequest(fromLang, toLang, input.slice(input.indexOf(' ') + 1), function callback(err, response) {
         api.sendMessage(response, message.threadID);
     });
