@@ -17,7 +17,8 @@ var ab = [
     'onOff',
     'superuser',
     'help',
-    'chatTitle'
+    'chatTitle',
+    'quote'
 ]
 
 ab.map(function(sub) {
