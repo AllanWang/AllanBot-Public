@@ -36,9 +36,8 @@ login({
     allanbot.setOptions({ //for your bot
         api: api, //YOU NEED THIS if you want anything to work
         firebase: myFirebaseRef.child('test'), //not necessary for very basic features; but is needed for all firebase functions; this should point to a child node
-        botName: 'Testbot', //Caps do matter for display
-        botID: 987654321,
-        myID: 123456789, //ID of your own account (if it is different from that of the bot)
+        botName: 'Testbot', //Caps do matter for display; if you leave this blank, it will take the first name on your facebook account
+        myID: 123456789, //ID of your own account (if it is different from that of the bot); no need to input botID (it is now automatic)
         myName: 'Bob',
         devArray: [dev1ID, dev2ID], //These people will have devMode; this and the next two are all arrays
         masterArray: [myID], //Preferably, you'd give yourself full power :); everyone here also has devMode
@@ -48,6 +47,7 @@ login({
 
     allanbot.enableFeatures({ //Everything here should be true or false
         everything: true //This will enable everything; check the README for a full list of possible features;
+        //Some features are not enabled via "everything": spam
     });
 
     api.listen(function callback(err, message) { //For the facebook-chat-api

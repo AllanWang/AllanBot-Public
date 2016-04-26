@@ -46,10 +46,7 @@ function setOptions(options) {
                 log.level = options.logLevel;
                 break;
             case 'botName':
-                var n = options.botName.toString();
-                v.botName = n;
-                v.botNameLength = n.length;
-                v.botNameL = n.toLowerCase();
+                setBotName(options.botName.toString());
                 break;
             case 'api':
                 api = options.api;
@@ -76,30 +73,31 @@ function setOptions(options) {
                 break;
         }
     });
-    if (!api) {
-        log.warn('API not received; nothing will work.');
+    if (!api) log.warn('API not received; nothing will work.');
+    v.botID = api.getCurrentUserID();
+    if (!v.botName) {
+        api.getUserInfo(v.botID, function(err, ret) {
+            if (!err) {
+                setBotName(ret[v.botID].firstName);
+            } else {
+                log.error('Setting bot name failed', err);
+            }
+        });
     }
-    if (!v.botID) {
-        log.warn('BotID not set; enabling selfListen in the facebook chat api or using certain advanced functions may produce issues.');
-    }
-    if (!v.myID) {
-        log.warn('ID not set; a few things won\'t work.');
-    }
-    if (!v.firebaseOn) {
-        log.warn('Firebase is not set; a lot of features will not work');
-    }
+    if (!v.myID) log.warn('ID not set; a few things won\'t work.');
+    if (!v.firebaseOn) log.warn('Firebase is not set; a lot of features will not work');
     log.info('--------------------\n     Welcome ' + v.botName + '\n     --------------------');
+}
+
+function setBotName(s) {
+    v.botName = s;
+    v.botNameLength = s.length;
+    v.botNameL = s.toLowerCase();
 }
 
 function enableFeatures(options) {
     Object.keys(options).map(function(key) {
         switch (key) {
-            case 'spam':
-                v.b.spam = options.spam;
-                if (bSpam) {
-                    log.info('Spam is enabled; this is only for those with devMode');
-                }
-                break;
             case 'everything':
                 for (var b in v.b) {
                     if (b == 'spam') continue;
@@ -125,11 +123,12 @@ function enableFeatures(options) {
     if (firstRun) { ///first run, in case you use enableFeatures multiple times
         firstRun = false;
         if (v.b.notifyMention) {
-            if (!(v.botName && v.botID && v.myID && v.myName)) {
-                log.warn('notifyMention disabled; make sure you have set both you and the bot\'s name and ID');
+            if (!v.myID || !v.myName) {
+                log.warn('notifyMention disabled; make sure you have set your name and ID');
                 v.b.notifyMention = false;
             }
         }
+        if (v.b.spam) log.info('Spam is enabled; this is only for those with devMode');
         if (v.b.userTimeout) ab.userTimeout.afterRestart(api);
         if (v.b.remind) {
             setTimeout(function() {
