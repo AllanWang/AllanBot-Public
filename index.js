@@ -179,7 +179,6 @@ function listen(message) {
         ab.indirect.messageInWaiting(api, message);
         ab.indirect.saveConversationList(api, message);
     }
-    if (v.b.help) ab.help.specific(api, message);
 
     var count1 = -1;
     listeners:
@@ -190,7 +189,7 @@ function listen(message) {
                     if (v.b.chatColour) ab.chatColour.listener(api, message);
                     break;
                 case 1:
-                    if (v.b.endlessTalk) ab.endlessTalk.inAction(api, message);
+                if (v.b.help) ab.help.specific(api, message);
                     break;
                 default:
                     break listeners;
@@ -243,6 +242,8 @@ function listen(message) {
     //check if disabled after master functions and listeners run
     if (v.b.onOff) ab.onOff.check(api, message);
 
+    if (v.b.endlessTalk) ab.endlessTalk.inAction(api, message); //should be disabled if offline
+    
     //Input stuff goes here
 
     if (input) {

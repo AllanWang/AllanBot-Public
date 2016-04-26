@@ -34,7 +34,7 @@ function create(api, message, input, save) {
     input = input.trim().toLowerCase();
     v.continue = false;
     // if (!i) i = 1;
-    api.getThreadHistory(message.threadID, 1, 100, Date.now(), function callback(error, history) {
+    api.getThreadHistory(message.threadID, 1, 1000, Date.now(), function callback(error, history) {
         if (error) return log.error('Error in getting quote', error);
         // log.info('i', i);
         log.info('h', history[2]);
@@ -56,7 +56,7 @@ function create(api, message, input, save) {
                 return;
             }
         }
-        api.sendMessage('Could not find text that contains ' + input + ' within the last 100 messages.', message.threadID);
+        api.sendMessage('Could not find text that contains ' + input + ' within the last ' + history.length + ' messages.', message.threadID);
         // if (i > 500) return;
         // create(api, message, input, i + 20);
     });
