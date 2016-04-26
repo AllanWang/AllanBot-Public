@@ -64,8 +64,8 @@ function menu(api, message) {
 
         chatColour: atbot + ' #000000" will change the chat colour to 000000. That colour can be any 6 digit hex colour, or the name of a colour.',
 
-        quickNotifications: atbot + ' --notify [name]: [content]" will notify [name] once he/she responds to ensure that the message is viewed.\
-        \n' + atbot + ' --eqn" will allow the same feature with the format "@[name]: [content]"\n' + atbot + ' --dqn" will disable that feature.',
+        quickNotifications: 'You need to type ' + atbot + ' --eqn" to enable this feature.\n' + atbot + ' @[name]: [content]" will notify [name] once he/she responds to ensure that the message is viewed.\
+        \n' + atbot + ' --dqn" will disable this feature.',
 
         remind: atbot + ' remind [name] @[time] [content]" will create a reminder for [name] in the future.\
         \n[time] can be formatted by HH:mm or by a full date (YYYY/MM/DD HH:mm)',

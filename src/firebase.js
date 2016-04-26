@@ -5,7 +5,7 @@ var v = require('./globalVariables');
 function initializeFirebase(f) {
     fBase = f;
     fBoolean = fBase.child("boolean");
-    v.f.Offline = fBoolean.child("heroku_offline");
+    v.f.Offline = fBoolean.child("bot_offline");
     v.f.QN = fBoolean.child("quick_notify");
     v.f.Nick = fBase.child("nicknames");
     v.f.Endless = fBoolean.child("endless_talk");

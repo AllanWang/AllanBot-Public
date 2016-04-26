@@ -61,13 +61,13 @@ function changeNicknameBasic(api, message, input) {
         v.continue = false;
         var name = input.slice(9).trim();
         var name2 = '';
-        translate.translateRequest('auto', 'en', name, function callback(err1, en) {
+        translate.request('auto', 'en', name, function callback(err1, en) {
             if (err1) return console.error(err1);
             name2 += en + '/';
-            translate.translateRequest('auto', 'fr', name, function callback(err2, fr) {
+            translate.request('auto', 'fr', name, function callback(err2, fr) {
                 if (err2) return console.error(err2);
                 name2 += fr + '/';
-                translate.translateRequest('auto', 'zh-CN', name, function callback(err3, ch) {
+                translate.request('auto', 'zh-CN', name, function callback(err3, ch) {
                     if (err3) return console.error(err3);
                     name2 += ch;
                     api.changeNickname(name2, message.threadID, message.senderID, function callback(err) {

@@ -24,7 +24,7 @@ function listen(api, message, input) {
 
 function check(api, message) {
     try {
-        if (v.sBase.boolean.heroku_offline) {
+        if (v.sBase.boolean.bot_offline) {
             v.continue = false;
             if (message.senderID == v.myID && v.contains(message.body, v.botNameL)) {
                 api.sendMessage('I am currently offline', message.threadID);

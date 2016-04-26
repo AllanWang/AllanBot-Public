@@ -65,8 +65,8 @@ function addnotifyData(api, message, input) {
                                     var text = 'You cannot send notifications to yourself.';
                                     api.sendMessage(text, message.threadID);
                                     console.log(text);
-                                } else if (v.contains(v.ignoreArray, id)) {
-                                    log.info(participantName + ' is in the ignoreArray');
+                                    // } else if (v.contains(v.ignoreArray, id)) {
+                                    //     log.info(participantName + ' is in the ignoreArray');
                                 } else if (id == v.botID) {
                                     log.info('ignore id for own bot');
                                 } else {
