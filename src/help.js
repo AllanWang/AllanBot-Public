@@ -3,7 +3,7 @@ var v = require('./globalVariables');
 var helpBoolean = 0;
 var i = 0;
 
-var index = ['saveText', 'translate', 'quickNotifications', 'remind', 'chatColour', 'chatTitle', 'nickname', 'echo', 'endlessTalk'];
+var index = ['saveText', 'translate', 'quickNotifications', 'remind', 'quote', 'chatColour', 'chatTitle', 'nickname', 'echo', 'endlessTalk'];
 var numbers = {};
 
 var title = {
@@ -16,7 +16,8 @@ var title = {
     remind: 'Reminders',
     nickname: 'Chat nicknames',
     chatTitle: 'Chat title',
-    translate: 'Translate'
+    translate: 'Translate',
+    quote: 'Quote/Find'
         // indirect: '',
         // translate,
 };
@@ -74,7 +75,10 @@ function menu(api, message) {
         chatTitle: atbot + ' title: [title]" will change the conversation title',
 
         translate: atbot + ' -t [language] [text]" will translate [text]. [language] may either be the language you are translating to, or [input]:[output] (ie @' + v.botNameL + '-t french:russian bonjour)\
-        \n' + atbot + ' -t" will display all the available languages'
+        \n' + atbot + ' -t" will display all the available languages',
+
+        quote: atbot + ' --find [text]" will display the latest message starting with or containing [text].\n' + atbot + ' --quote [text]" will do the same thing but will also save it\
+        \nYou may view the saved quotes via ' + atbot + ' --quotes" or ' + atbot + ' --all quotes" to see the quotes saved by everyone in this conversation.'
     };
 
     if (v.devMode) {

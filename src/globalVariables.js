@@ -17,7 +17,8 @@ var firebase = {
     Conversations: null,
     ColorSuggestions: null,
     MIW: null,
-    Timeout: null
+    Timeout: null,
+    Quote: null
 }
 
 module.exports = {

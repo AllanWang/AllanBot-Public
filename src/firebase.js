@@ -17,6 +17,7 @@ function initializeFirebase(f) {
     v.f.ColorSuggestions = fBase.child("colors_custom");
     v.f.MIW = fBase.child("messages_in_waiting");
     v.f.Timeout = fBoolean.child("timeout");
+    v.f.Quote = fBase.child("quotes");
     log.info('firebase loaded!');
     v.firebaseOn = true;
 }

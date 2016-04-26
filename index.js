@@ -341,6 +341,9 @@ function listen(message) {
                 case 14:
                     if (v.b.translate) ab.translate.parse(api, message, input);
                     break;
+                case 15:
+                    if (v.b.quote) ab.quote.listener(api, message, input);
+                    break;
                 default:
                     if (v.b.talkBack) ab.basic.respondRequest(api, message, input);
                     return;
