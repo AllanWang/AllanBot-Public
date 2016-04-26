@@ -2,6 +2,7 @@ var log = require("npmlog");
 var v = require('./globalVariables');
 var f = require('./firebase');
 var moment = require('moment-timezone');
+var count = 0;
 
 function listener(api, message, input) {
     if (input.slice(0, 7) == '--find ') return create(api, message, input.slice(7));
@@ -33,30 +34,39 @@ function print(api, message, all) {
 function create(api, message, input, save) {
     input = input.trim().toLowerCase();
     v.continue = false;
+    count = 0;
     // if (!i) i = 1;
-    api.getThreadHistory(message.threadID, 1, 1000, Date.now(), function callback(error, history) {
+    // log.info('i', i);
+    api.getThreadHistory(message.threadID, 1, 1000, null, function callback(error, history) {
         if (error) return log.error('Error in getting quote', error);
         // log.info('i', i);
-        log.info('h', history[2]);
-        for (var j = history.length - 1; j >= 0; j--) {
-            if (!history[j].body) continue;
-            if (history[j].body.slice(0, input.length).toLowerCase() == input) {
-                if (history[j].body.toLowerCase().slice(0, v.botNameLength + 1) == '@' + v.botNameL) continue;
-                if (history[j].senderID.split(':')[1] == v.botID) continue;
-                output(api, message, history[j], save);
-                return;
-            }
-        }
+        // log.info('h', history[history.length - 2], history.length);
+        // for (var j = history.length - 1; j >= 0; j--) {
+        //     if (!history[j].body) continue;
+        //     if (history[j].body.slice(0, input.length).toLowerCase() == input) {
+        //         if (history[j].body.toLowerCase().slice(0, v.botNameLength + 1) == '@' + v.botNameL) continue;
+        //         if (history[j].senderID.split(':')[1] == v.botID) continue;
+        //         output(api, message, history[j], save);
+        //         // return;
+        //     }
+        // }
         for (var j = history.length - 2; j >= 0; j--) { //do not include last message
             if (!history[j].body) continue;
             if (v.contains(history[j].body, input)) {
                 if (history[j].body.toLowerCase().slice(0, v.botNameLength + 1) == '@' + v.botNameL) continue;
-                if (history[j].senderID.split(':')[1] == v.botID) continue;
+                if (v.contains(v.ignoreArray, history[j].senderID.split(':')[1])) continue;
+                // if (history[j].senderID.split(':')[1] == v.botID) continue;
                 output(api, message, history[j], save);
-                return;
+                if (save) return;
+                count++;
+                if (count >= 5) return;
+                // return;
             }
         }
-        api.sendMessage('Could not find text that contains ' + input + ' within the last ' + history.length + ' messages.', message.threadID);
+        // if (i > 100) return;
+        // create(api, message, input, save, i * 2);
+
+        if (count == 0) api.sendMessage('Could not find text that contains ' + v.quotes(input) + ' within the last ' + history.length + ' messages.', message.threadID);
         // if (i > 500) return;
         // create(api, message, input, i + 20);
     });

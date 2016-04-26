@@ -49,7 +49,6 @@ function changeNickname(api, message, t) {
 
 function changeNicknameBasic(api, message, input) {
     if (input.toLowerCase().slice(0, 8) != 'nickname') return;
-    log.warn('c', input.charAt(8));
     if (input.charAt(8) == ':') {
         v.continue = false;
         api.changeNickname(input.slice(9).trim(), message.threadID, message.senderID, function callback(err) {

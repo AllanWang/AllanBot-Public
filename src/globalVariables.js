@@ -37,7 +37,7 @@ module.exports = {
     godMode: false,
     reminders: false,
     devMode: false,
-    ignoreArray: null,
+    ignoreArray: [],
     sBase: null,
     b: featureBooleans,
     f: firebase,

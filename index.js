@@ -75,7 +75,7 @@ function setOptions(options) {
         }
     });
     if (!api) log.warn('API not received; nothing will work.');
-    v.botID = api.getCurrentUserID();
+    v.botID = parseInt(api.getCurrentUserID());
     if (!v.botName) {
         api.getUserInfo(v.botID, function(err, ret) {
             if (!err) {
@@ -86,6 +86,7 @@ function setOptions(options) {
         });
     }
     if (!v.myID) log.warn('ID not set; a few things won\'t work.');
+    if (!v.contains(v.ignoreArray, v.botID)) v.ignoreArray.unshift(v.botID);
     if (!v.firebaseOn) log.warn('Firebase is not set; a lot of features will not work');
     log.info('--------------------\n     Welcome ' + v.botName + '\n     --------------------');
 }
@@ -273,7 +274,8 @@ function listen(message) {
                 case 2:
                     if (v.b.quickNotifications) {
                         if (input.toLowerCase() == '--eqn') {
-                            f.setData(api, message, v.f.QN.child(message.senderID), true, 'Quick notifications enabled.\nYou only need to do this once until you disable it.');
+                            f.setData(api, message, v.f.QN.child(message.senderID), true,
+                                'Quick notifications enabled.\nYou only need to do this once until you disable it.');
                             v.continue = false;
                         } else if (input.toLowerCase() == '--dqn') {
                             f.setData(api, message, v.f.QN.child(message.senderID), null, 'Quick notifications disabled.');
@@ -345,6 +347,7 @@ function listen(message) {
                 case 15:
                     if (v.b.quote) ab.quote.listener(api, message, input);
                     break;
+                    //TODO yes no nickname
                 default:
                     if (v.b.talkBack) ab.basic.respondRequest(api, message, input);
                     return;

@@ -43,9 +43,9 @@ function addnotifyData(api, message, input) {
 
     var nameOrig = name;
     name = name.toLowerCase();
-    api.getUserInfo(message.senderID, function(err, ret) {
+    api.getUserInfo(message.senderID, function(err, ret1) {
         if (err) return console.error(err);
-        var intro = ret[message.senderID].firstName + " to " + nameOrig + ": ";
+        var intro = ret1[message.senderID].firstName + " to " + nameOrig + ": ";
         var text = 'placeholder_text';
         var finalID = 'placeholder_id';
 
@@ -59,7 +59,7 @@ function addnotifyData(api, message, input) {
                     for (var id in ret) {
                         if (ret.hasOwnProperty(id)) {
                             var participantName = ret[id].name.toLowerCase();
-                            if (participantName.indexOf(name) != -1) {
+                            if (v.contains(participantName, name) && ret[id].firstName.toLowerCase() != v.botNameL) {
                                 // Match. Do matched stuff.
                                 if (id == message.senderID) {
                                     var text = 'You cannot send notifications to yourself.';

@@ -32,7 +32,8 @@ function notifyMention(api, message) {
         log.warn('Name not set; check "myName"');
         return;
     }
-    if (v.contains(message.body, v.myName) && !v.contains(message.body, v.botName) && !v.contains(message.body, "@" + v.myName) && !v.godMode && message.senderID != v.botID) {
+    if (v.contains(message.body, v.myName) && !v.contains(message.body, v.botName) && !v.contains(message.body, "@" + v.myName) && !v.godMode &&
+        !v.contains(v.ignoreArray, message.senderID)) {
         api.getUserInfo(message.senderID, function(err, ret) {
             if (err) return console.error(err);
             api.getThreadInfo(message.threadID, function callback(err, info) {
@@ -79,17 +80,18 @@ function respondSwitch(api, message, input) {
 
 function pandoraRequest(api, message, input, prefix) {
     if (prefix === undefined) prefix = ''; //TODO check if necessary
-    rp('http://www.pandorabots.com/pandora/talk-xml?botid=' + pandoraID + '&input=' + encodeURIComponent(input) + '&custid=' + message.threadID).then(function(response) {
-        xml2js.parseString(response, function(err, result) {
-            var reply = result.result.that[0];
-            log.info(prefix + 'Replying:', reply);
-            api.sendMessage(prefix + reply, message.threadID);
+    rp('http://www.pandorabots.com/pandora/talk-xml?botid=' + pandoraID + '&input=' + encodeURIComponent(input) + '&custid=' + message.threadID)
+        .then(function(response) {
+            xml2js.parseString(response, function(err, result) {
+                var reply = result.result.that[0];
+                log.info(prefix + 'Replying:', reply);
+                api.sendMessage(prefix + reply, message.threadID);
+            });
+        }).catch(function(error) {
+            api.sendMessage('Pandora bot is down now. Switching to Mitsuku', message.threadID);
+            v.mitsukuMode = true;
+            log.error('------------ PANDORA ERROR ------------\n', error);
         });
-    }).catch(function(error) {
-        api.sendMessage('Pandora bot is down now. Switching to Mitsuku', message.threadID);
-        v.mitsukuMode = true;
-        log.error('------------ PANDORA ERROR ------------\n', error);
-    });
 }
 
 function mitsukuRequest(api, message, input, prefix) {
