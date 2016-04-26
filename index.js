@@ -102,14 +102,8 @@ function enableFeatures(options) {
                 break;
             case 'everything':
                 for (var b in v.b) {
+                    if (b == 'spam') continue;
                     v.b[b] = options.everything;
-                }
-                break;
-            case 'notifyMention':
-                if (v.botName && v.botID && v.myID && v.myName) {
-                    v.b.notifyMention = options.notifyMention;
-                } else {
-                    log.warn('notifyMention disabled; make sure you have set both you and the bot\'s name and ID');
                 }
                 break;
             case 'reminders':
@@ -130,7 +124,12 @@ function enableFeatures(options) {
     }
     if (firstRun) { ///first run, in case you use enableFeatures multiple times
         firstRun = false;
-
+        if (v.b.notifyMention) {
+            if (!(v.botName && v.botID && v.myID && v.myName)) {
+                log.warn('notifyMention disabled; make sure you have set both you and the bot\'s name and ID');
+                v.b.notifyMention = false;
+            }
+        }
         if (v.b.userTimeout) ab.userTimeout.afterRestart(api);
         if (v.b.remind) {
             setTimeout(function() {

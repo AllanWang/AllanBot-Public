@@ -6,12 +6,12 @@ var log = require("npmlog");
 var v = require('./globalVariables');
 
 function echo(api, message, input) {
-  v.continue = false;
+    v.continue = false;
     api.sendMessage(input, message.threadID);
 }
 
 function spam(api, message) {
-  v.continue = false;
+    v.continue = false;
     for (var i = 0; i < 25; i++) {
         setTimeout(function() {
             if (!v.isMuted) {
@@ -51,6 +51,8 @@ function enablePandora(id) {
 
 function respondRequest(api, message, input, prefix) {
     if (v.isMuted) return;
+    if (message.senderID == v.botID) return;
+    if (input.trim() == ' ') return;
     if (!v.mitsukuMode && v.pandoraEnabled) {
         try {
             pandoraRequest(api, message, input, prefix);
