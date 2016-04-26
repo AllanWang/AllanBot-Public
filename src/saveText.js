@@ -3,7 +3,7 @@ var log = require("npmlog");
 var v = require('./globalVariables');
 var f = require('./firebase');
 
-function saveText(api, message, input) {
+function save(api, message, input) {
     if (!v.firebaseOn) {
         log.error('firebase is not enabled, see initializeFirebase');
         return;
@@ -19,7 +19,7 @@ function saveText(api, message, input) {
     f.setData(api, message, v.f.Saved.child(message.threadID).child(message.senderID), input, 'Saved text:\n' + input);
 }
 
-function getSavedText(api, message) {
+function get(api, message) {
     if (!v.firebaseOn) {
         log.error('firebase is not enabled, see initializeFirebase');
         return;
@@ -37,6 +37,6 @@ function getSavedText(api, message) {
 }
 
 module.exports = {
-    saveText: saveText,
-    getSavedText: getSavedText
+    save: save,
+    get: get
 }

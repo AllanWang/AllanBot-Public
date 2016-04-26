@@ -189,7 +189,7 @@ function listen(message) {
                     if (v.b.chatColour) ab.chatColour.listener(api, message);
                     break;
                 case 1:
-                if (v.b.help) ab.help.specific(api, message);
+                    if (v.b.help) ab.help.specific(api, message);
                     break;
                 default:
                     break listeners;
@@ -243,7 +243,7 @@ function listen(message) {
     if (v.b.onOff) ab.onOff.check(api, message);
 
     if (v.b.endlessTalk) ab.endlessTalk.inAction(api, message); //should be disabled if offline
-    
+
     //Input stuff goes here
 
     if (input) {
@@ -259,10 +259,10 @@ function listen(message) {
                 case 1:
                     if (v.b.saveText) {
                         if (input.slice(0, 7) == '--save ' && input.length > 7) {
-                            ab.saveText.saveText(api, message, input.slice(7));
+                            ab.saveText.save(api, message, input.slice(7));
                             v.continue = false;
                         } else if (input == '--saved') {
-                            ab.saveText.getSavedText(api, message);
+                            ab.saveText.get(api, message);
                             v.continue = false;
                         } else if (input == '--erase') {
                             f.setData(api, message, v.f.Saved.child(message.threadID).child(message.senderID), null, 'Erased saved text');
