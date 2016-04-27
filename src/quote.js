@@ -5,11 +5,26 @@ var moment = require('moment-timezone');
 var count = 0;
 
 function listener(api, message, input) {
-    if (input.slice(0, 11) == '--find all ') return create(api, message, input.slice(11), 1000000);
+    if (input.slice(0, 11) == '--find all ') {
+        api.getThreadInfo(message.threadID, function callback(error, info) {
+            if (error) return log.error('Count error', error);
+            create(api, message, input.slice(11), info.messageCount);
+        });
+        return;
+    }
     if (input.slice(0, 7) == '--find ') return create(api, message, input.slice(7), 1000);
     if (input.slice(0, 8) == '--quote ') return create(api, message, input.slice(8), 1000, true);
     if (input == '--quotes') return print(api, message);
     if (input == '--all quotes') return print(api, message, true);
+    if (input == '--count') return countFunction(api, message);
+}
+
+function countFunction(api, message) {
+    v.continue = false;
+    api.getThreadInfo(message.threadID, function callback(error, info) {
+        if (error) return log.error('Count error', error);
+        api.sendMessage('There are ' + info.messageCount + ' messages', message.threadID);
+    });
 }
 
 function print(api, message, all) {
@@ -38,6 +53,11 @@ function create(api, message, input, i, save) {
     if (input.length == 0) return;
     count = 0;
     log.info('finding', input, '...');
+    setTimeout(function() {
+        if (count == 0) {
+            api.sendMessage('Still looking for ' + input + '...', message.threadID);
+        }
+    }, 3000);
     // if (!i) i = 1;
     // log.info('i', i);
     api.getThreadHistory(message.threadID, 1, i, null, function callback(error, history) {
@@ -56,7 +76,10 @@ function create(api, message, input, i, save) {
         for (var j = history.length - 2; j >= 0; j--) { //do not include last message
             if (!history[j].body) continue;
             if (v.contains(history[j].body, input)) {
-                if (history[j].body.toLowerCase().slice(0, 1) == '@') continue;
+                if (history[j].body.toLowerCase().slice(0, 1) == '@') {
+                    if (v.contains(history[j].body, v.botNameL)) continue;
+                    if (v.contains(history[j].body, '--')) continue;
+                }
                 if (v.contains(v.ignoreArray, history[j].senderID.split(':')[1])) continue;
                 // if (history[j].senderID.split(':')[1] == v.botID) continue;
                 output(api, message, history[j], save);
@@ -69,7 +92,10 @@ function create(api, message, input, i, save) {
         // if (i > 100) return;
         // create(api, message, input, save, i * 2);
 
-        if (count == 0) api.sendMessage('Could not find text that contains ' + v.quotes(input) + ' within the last ' + history.length + ' messages.', message.threadID);
+        if (count == 0) {
+            count = -1;
+            api.sendMessage('Could not find text that contains ' + v.quotes(input) + ' within the last ' + history.length + ' messages.', message.threadID);
+        }
         // if (i > 500) return;
         // create(api, message, input, i + 20);
     });

@@ -17,7 +17,7 @@ var title = {
     nickname: 'Chat nicknames',
     chatTitle: 'Chat title',
     translate: 'Translate',
-    quote: 'Quote/Find'
+    quote: 'Quote/Find/Count'
         // indirect: '',
         // translate,
 };
@@ -85,8 +85,8 @@ function menu(api, message) {
 
         quote: atbot + ' --find [text]" will display the latest message starting with or containing [text].\n' + atbot +
             ' --quote [text]" will do the same thing but will also save it \nYou may view the saved quotes via ' + atbot +
-            '--quotes " or ' + atbot +
-            ' --all quotes" to see the quotes saved by everyone in this conversation.'
+            ' --quotes" or ' + atbot + ' --all quotes" to see the quotes saved by everyone in this conversation.\n' + atbot +
+            ' --count" will display the number of messages in the conversation'
     };
 
     if (v.devMode) {
