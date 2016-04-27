@@ -5,28 +5,6 @@ var m = require('mitsuku-api')();
 var log = require("npmlog");
 var v = require('./globalVariables');
 
-function echo(api, message, input) {
-    v.continue = false;
-    api.sendMessage(input, message.threadID);
-}
-
-function spam(api, message) {
-    v.continue = false;
-    for (var i = 0; i < 25; i++) {
-        setTimeout(function() {
-            if (!v.isMuted) {
-                var text = '';
-                for (var j = 0; j < 5; j++) {
-                    text += Array(11).join((Math.random().toString(36) + '00000000000000000').slice(2, 18)).slice(0, 10) + '\n';
-                }
-                api.sendMessage(text, message.threadID);
-            } else {
-                clearTimeout();
-            }
-        }, 500);
-    }
-}
-
 function notifyMention(api, message) {
     if (!v.myName) {
         log.warn('Name not set; check "myName"');
@@ -53,7 +31,11 @@ function enablePandora(id) {
 function respondRequest(api, message, input, prefix) {
     if (v.isMuted) return;
     if (message.senderID == v.botID) return;
-    if (input.trim() == ' ') return;
+    if (input.trim() == ' ' || input.trim() == '') return;
+    if (input.length > 250) {
+        input = input.slice(0, 250);
+        log.info('Shortening input before respondRequest');
+    }
     if (!v.mitsukuMode && v.pandoraEnabled) {
         try {
             pandoraRequest(api, message, input, prefix);
@@ -79,7 +61,7 @@ function respondSwitch(api, message, input) {
 }
 
 function pandoraRequest(api, message, input, prefix) {
-    if (prefix === undefined) prefix = ''; //TODO check if necessary
+    if (!prefix) prefix = '';
     rp('http://www.pandorabots.com/pandora/talk-xml?botid=' + pandoraID + '&input=' + encodeURIComponent(input) + '&custid=' + message.threadID)
         .then(function(response) {
             xml2js.parseString(response, function(err, result) {
@@ -95,7 +77,7 @@ function pandoraRequest(api, message, input, prefix) {
 }
 
 function mitsukuRequest(api, message, input, prefix) {
-    if (prefix === undefined) prefix = ''; //TODO check if necessary
+    if (!prefix) prefix = '';
     try {
         m.send(input.replace(/[v.botName]/ig, 'Mitsuku'))
             .then(function(response) {
@@ -129,8 +111,6 @@ function muteToggle(api, message) {
 }
 
 module.exports = {
-    echo: echo,
-    spam: spam,
     enablePandora: enablePandora,
     respondRequest: respondRequest,
     notifyMention: notifyMention,

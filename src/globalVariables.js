@@ -1,7 +1,5 @@
 var featureBooleans = {
     talkBack: false,
-    echo: false,
-    spam: false,
     notifyMention: false
 };
 
@@ -50,6 +48,9 @@ module.exports = {
     quotes: function(s) {
         s = '"' + s + '"';
         return s;
+    },
+    isBotName: function(name) {
+        return (name.slice(name.length - 3).toLowerCase() == 'bot');
     }
 
 

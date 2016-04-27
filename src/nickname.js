@@ -3,12 +3,13 @@ var v = require('./globalVariables');
 var f = require('./firebase');
 var translate = require('./translate');
 
-function yesNoNickname(api, message) {
-    if (message.body == '--nonickname' || message.body == '--nnickname') {
-        changeNickname(api, message, false);
-    } else if (message.body == '--yesnickname' || message.body == '--ynickname') {
-        changeNickname(api, message, true);
+function listener(api, message, input) {
+    if (input == '--nonickname' || input == '--nnickname') {
+        return changeNickname(api, message, false);
+    } else if (input == '--yesnickname' || input == '--ynickname') {
+        return changeNickname(api, message, true);
     }
+    changeNicknameBasic(api, message, input);
 }
 
 function changeNickname(api, message, t) {
@@ -80,7 +81,7 @@ function changeNicknameBasic(api, message, input) {
 }
 
 module.exports = {
-    yesNoNickname: yesNoNickname,
+    listener: listener,
     changeNickname: changeNickname,
     changeNicknameBasic: changeNicknameBasic
 }

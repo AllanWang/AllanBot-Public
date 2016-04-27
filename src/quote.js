@@ -6,6 +6,7 @@ var count = 0;
 
 function listener(api, message, input) {
     if (input.slice(0, 11) == '--find all ') {
+        v.continue = false;
         api.getThreadInfo(message.threadID, function callback(error, info) {
             if (error) return log.error('Count error', error);
             create(api, message, input.slice(11), info.messageCount);
@@ -58,21 +59,8 @@ function create(api, message, input, i, save) {
             api.sendMessage('Still looking for ' + input + '...', message.threadID);
         }
     }, 3000);
-    // if (!i) i = 1;
-    // log.info('i', i);
     api.getThreadHistory(message.threadID, 1, i, null, function callback(error, history) {
         if (error) return log.error('Error in getting quote', error);
-        // log.info('i', i);
-        // log.info('h', history[history.length - 2], history.length);
-        // for (var j = history.length - 1; j >= 0; j--) {
-        //     if (!history[j].body) continue;
-        //     if (history[j].body.slice(0, input.length).toLowerCase() == input) {
-        //         if (history[j].body.toLowerCase().slice(0, v.botNameLength + 1) == '@' + v.botNameL) continue;
-        //         if (history[j].senderID.split(':')[1] == v.botID) continue;
-        //         output(api, message, history[j], save);
-        //         // return;
-        //     }
-        // }
         for (var j = history.length - 2; j >= 0; j--) { //do not include last message
             if (!history[j].body) continue;
             if (v.contains(history[j].body, input)) {
@@ -81,12 +69,10 @@ function create(api, message, input, i, save) {
                     if (v.contains(history[j].body, '--')) continue;
                 }
                 if (v.contains(v.ignoreArray, history[j].senderID.split(':')[1])) continue;
-                // if (history[j].senderID.split(':')[1] == v.botID) continue;
                 output(api, message, history[j], save);
                 if (save) return;
                 count++;
                 if (count >= 5) return;
-                // return;
             }
         }
         // if (i > 100) return;

@@ -6,12 +6,17 @@ var moment = require('moment-timezone');
 var scheduledMessageTime = 0;
 var scheduledMessageKey = 'key';
 
-function setTimezone(api, message, input) {
-    if (input.slice(0, 4) != 'UTC ') {
-        return;
+function listener(api, message, input) {
+    if (input.slice(0, 4) == 'UTC ') {
+        setTimezone(api, message, input.slice(4));
+    } else if (input.slice(0, 7).toLowerCase() == 'remind ') {
+        createTimeNotification(api, message, input.slice(7));
     }
+}
+
+function setTimezone(api, message, input) {
     v.continue = false;
-    var offset = parseInt(input.slice(4));
+    var offset = parseInt(input);
     if (isNaN(offset)) {
         api.sendMessage('That is an invalid timezone offset.', message.threadID);
     } else {
@@ -22,14 +27,8 @@ function setTimezone(api, message, input) {
     }
 }
 
-function createTimeNotification(api, message, input) { //schedule
-    if (input.slice(0, 7).toLowerCase() != 'remind ') {
-        return;
-    }
-    var content = input.slice(7);
-    if (!v.contains(content, '@') || !v.contains(content, ':')) {
-        return;
-    }
+function createTimeNotification(api, message, content) {
+    if (!v.contains(content, '@') || !v.contains(content, ':')) return;
     log.info('creating time notif');
     v.continue = false;
     var offset = 0;
@@ -209,6 +208,7 @@ function getScheduledMessages() {
 }
 
 module.exports = {
+    listener: listener,
     setTimezone: setTimezone,
     createTimeNotification: createTimeNotification,
     checkTimeNotification: checkTimeNotification,

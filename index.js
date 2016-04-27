@@ -18,7 +18,10 @@ var ab = [
     'superuser',
     'help',
     'chatTitle',
-    'quote'
+    'quote',
+    'chatEmoji',
+    'spam',
+    'echo'
 ]
 
 ab.map(function(sub) {
@@ -168,8 +171,10 @@ function listen(message) {
         log.info('user has devMode');
     }
 
-    //Listeners go here
+    //continue independent isteners go here
+
     if (v.b.superuser) ab.superuser.commands(api, message);
+
     if (message.senderID == v.botID) return; //stop listening to bot
 
     if (v.b.quickNotifications) ab.quickNotifications.notifyData(api, message); //sends notification if it exists
@@ -181,23 +186,12 @@ function listen(message) {
         ab.indirect.saveConversationList(api, message);
     }
 
-    var count1 = -1;
-    listeners:
-        while (v.continue) {
-            count1++;
-            switch (count1) {
-                case 0:
-                    if (v.b.chatColour) ab.chatColour.listener(api, message);
-                    break;
-                case 1:
-                    if (v.b.help) ab.help.specific(api, message);
-                    break;
-                default:
-                    break listeners;
-            }
-        }
+    //input independent listeners
 
-    if (!v.continue) return;
+    if (v.continue && v.b.chatColour) ab.chatColour.listener(api, message);
+    if (v.continue && v.b.help) ab.help.specific(api, message);
+
+    if (!v.continue) return; //done going through first group of listeners
 
     if (message.threadID == v.myID) {
         if (v.b.indirect) {
@@ -205,6 +199,7 @@ function listen(message) {
             if (message.body == '--map') ab.indirect.printConvoMap(api);
         }
     }
+
     //input checker
     var input = '';
     if (message.isGroup) {
@@ -214,25 +209,14 @@ function listen(message) {
     } else if (!v.contains(v.ignoreArray, message.threadID)) { //make sure it isn't a one on one convo with a bot
         input = message.body;
     }
+
     //godMode stuff
+
     if (v.godMode) {
-        var count2 = -1;
-        masterFeatures:
-            while (v.continue) {
-                count2++;
-                switch (count2) {
-                    case 0:
-                        if (v.b.onOff) ab.onOff.listen(api, message, message.body);
-                    case 1:
-                        if (v.b.endlessTalk) ab.endlessTalk.set(api, message);
-                        break;
-                    case 2:
-                        ab.basic.muteToggle(api, message);
-                        break;
-                    default:
-                        break masterFeatures;
-                }
-            }
+        if (v.continue && v.b.onOff) ab.onOff.listener(api, message, message.body);
+        if (v.continue && v.b.endlessTalk) ab.endlessTalk.listener(api, message, message.body);
+        if (v.continue) ab.basic.muteToggle(api, message);
+
         if (!v.continue) return;
     }
 
@@ -250,109 +234,23 @@ function listen(message) {
     if (input) {
         log.info('Input', input);
 
-        var count3 = -1;
-        while (v.continue) {
-            count3++;
-            switch (count3) {
-                case 0:
-                    if (v.b.help && input.length < 8 && v.contains(input, 'help')) ab.help.menu(api, message);
-                    break;
-                case 1:
-                    if (v.b.saveText) {
-                        if (input.slice(0, 7) == '--save ' && input.length > 7) {
-                            ab.saveText.save(api, message, input.slice(7));
-                            v.continue = false;
-                        } else if (input == '--saved') {
-                            ab.saveText.get(api, message);
-                            v.continue = false;
-                        } else if (input == '--erase') {
-                            f.setData(api, message, v.f.Saved.child(message.threadID).child(message.senderID), null, 'Erased saved text');
-                            v.continue = false;
-                        }
-                    }
-                    break;
-                case 2:
-                    if (v.b.quickNotifications) {
-                        if (input.toLowerCase() == '--eqn') {
-                            f.setData(api, message, v.f.QN.child(message.senderID), true,
-                                'Quick notifications enabled.\nYou only need to do this once until you disable it.');
-                            v.continue = false;
-                        } else if (input.toLowerCase() == '--dqn') {
-                            f.setData(api, message, v.f.QN.child(message.senderID), null, 'Quick notifications disabled.');
-                            v.continue = false;
-                        }
-                    }
-                    break;
-                case 3:
-                    if (v.b.spam && input == '--spam') {
-                        if (v.devMode) {
-                            ab.basic.spam(api, message);
-                        } else {
-                            api.sendMessage('You do not have the power to do this.', message.threadID);
-                        }
-                        v.continue = false;
-                    }
-                    break;
-                case 4:
-                    if (v.b.chatTitle) ab.chatTitle.set(api, message, input);
-                    break;
-                case 5:
-                    if (v.b.echo && input.slice(0, 7) == '--echo ' && input.length > 7) {
-                        var s = input.slice(7);
-                        if (!v.godMode) { //TODO add these things
-                            if (s.slice(0, 1) == '$') {
-                                api.sendMessage('You cannot run commands via echoing', message.threadID); //this is designated for my superuse commands (commands done by the bot) - It is not added
-                                v.continue = false;
-                            } else if (s.slice(0, v.botNameLength + 1).toLowerCase() == '@' + v.botNameL) {
-                                api.sendMessage("I don't want to echo myself.", message.threadID);
-                                v.continue = false;
-                            }
-                        }
-                        ab.basic.echo(api, message, s);
-                    }
-                    break;
-                case 6:
-                    if (v.b.userTimeout && input == '!!!') {
-                        v.continue = false;
-                        api.getUserInfo(message.senderID, function(err, ret) {
-                            if (err) return console.error(err);
-                            ab.userTimeout.userTimeout(api, message, message.senderID, ret[message.senderID].name);
-                        });
-                    }
-                    break;
-                case 7:
-                    if (v.b.nickname) ab.nickname.changeNicknameBasic(api, message, input);
-                    break;
-                case 8:
-                    if (v.b.chatColour) ab.chatColour.change(api, message, input);
-                    break;
-                case 9:
-                    if (v.b.endlessTalk) ab.endlessTalk.me(api, message, input);
-                    break;
-                case 10:
-                    ab.basic.respondSwitch(api, message, input);
-                    break;
-                case 11:
-                    if (v.b.quickNotifications) ab.quickNotifications.createNotifyData(api, message, input);
-                    break;
-                case 12:
-                    if (v.b.remind) ab.remind.setTimezone(api, message, input);
-                    break;
-                case 13:
-                    if (v.b.remind) ab.remind.createTimeNotification(api, message, input);
-                    break;
-                case 14:
-                    if (v.b.translate) ab.translate.parse(api, message, input);
-                    break;
-                case 15:
-                    if (v.b.quote) ab.quote.listener(api, message, input);
-                    break;
-                    //TODO yes no nickname
-                default:
-                    if (v.b.talkBack) ab.basic.respondRequest(api, message, input);
-                    return;
-            }
-        }
+        if (v.continue) ab.basic.respondSwitch(api, message, input);
+        if (v.continue && v.b.chatColour) ab.chatColour.change(api, message, input);
+        if (v.continue && v.b.chatEmoji) ab.chatEmoji.listener(api, message, input);
+        if (v.continue && v.b.chatTitle) ab.chatTitle.listener(api, message, input);
+        if (v.continue && v.b.echo) ab.echo.listener(api, message, input);
+        if (v.continue && v.b.endlessTalk) ab.endlessTalk.listener(api, message, input);
+        if (v.continue && v.b.help) ab.help.listener(api, message, input);
+        if (v.continue && v.b.nickname) ab.nickname.listener(api, message, input);
+        if (v.continue && v.b.quickNotifications) ab.quickNotifications.listener(api, message, input);
+        if (v.continue && v.b.quote) ab.quote.listener(api, message, input);
+        if (v.continue && v.b.remind) ab.remind.listener(api, message, input);
+        if (v.continue && v.b.saveText) ab.saveText.listener(api, message, input);
+        if (v.continue && v.b.spam) ab.spam.listener(api, message, input);
+        if (v.continue && v.b.translate) ab.translate.listener(api, message, input);
+
+        //response listener must be last
+        if (v.continue && v.b.talkBack) ab.basic.respondRequest(api, message, input);
     }
 }
 

@@ -124,7 +124,16 @@ function getLanKey(s) {
     return 'auto';
 }
 
+function listener(api, message, input) {
+    if (input.trim() == '-t') {
+        api.sendMessage(printLangKey(), message.threadID);
+    } else if (input.slice(0, 3) == '-t ' && input.length > 6) {
+        parse(api, message, input.slice(3));
+    }
+}
+
 function printLangKey() {
+    v.continue = false;
     var s = 'Available languages:\n\n';
     // var t = '\n\n';
     for (var l in langMap) {
@@ -155,14 +164,8 @@ function request(fromLang, toLang, phrase, callback) {
 }
 
 function parse(api, message, input) {
-    if (input.trim() == '-t') {
-        v.continue = false;
-        api.sendMessage(printLangKey(), message.threadID);
-        return;
-    }
-    if (input.slice(0, 3) != '-t ') return;
     v.continue = false;
-    input = input.slice(3).trim();
+    input = input.trim();
     var l = input.split(' ')[0]
     var fromLang = 'auto';
     var toLang;
@@ -213,6 +216,7 @@ function translate(fromLang, toLang, phrase) {
 }
 
 module.exports = {
+    listener: listener,
     request: request,
     parse: parse
 }

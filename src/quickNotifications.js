@@ -2,20 +2,14 @@ var log = require("npmlog");
 var v = require('./globalVariables');
 var f = require('./firebase');
 
-function notifyData(api, message) {
-    try {
-        if (v.sBase.notificationMessages[message.threadID][message.senderID]) {
-            api.sendMessage(v.sBase.notificationMessages[message.threadID][message.senderID], message.threadID);
-            f.setData(api, message, v.f.Notifications.child(message.threadID).child(message.senderID), null, null);
-        }
-    } catch (err) {
-        //do nothing, no value exists
-    }
-}
-
-function createNotifyData(api, message, input) {
-    //quick notify
-    if ((!v.isMuted || v.godMode) && message.threadID != v.myID) {
+function listener(api, message, input) {
+    if (input.toLowerCase() == '--eqn') {
+        v.continue = false;
+        f.setData(api, message, v.f.QN.child(message.senderID), true, 'Quick notifications enabled.\nYou only need to do this once until you disable it.');
+    } else if (input.toLowerCase() == '--dqn') {
+        v.continue = false;
+        f.setData(api, message, v.f.QN.child(message.senderID), null, 'Quick notifications disabled.');
+    } else if ((!v.isMuted || v.godMode) && message.threadID != v.myID) {
         if (input.slice(0, 1) == '@' && input.length > 5 && input.indexOf(":") > 1) {
             v.continue = false;
             try {
@@ -28,6 +22,17 @@ function createNotifyData(api, message, input) {
                 api.sendMessage('To enable quick notifications, type "@' + v.botNameL + ' --eqn"', message.threadID);
             }
         }
+    }
+}
+
+function notifyData(api, message) {
+    try {
+        if (v.sBase.notificationMessages[message.threadID][message.senderID]) {
+            api.sendMessage(v.sBase.notificationMessages[message.threadID][message.senderID], message.threadID);
+            f.setData(api, message, v.f.Notifications.child(message.threadID).child(message.senderID), null, null);
+        }
+    } catch (err) {
+        //do nothing, no value exists
     }
 }
 
@@ -64,9 +69,7 @@ function addnotifyData(api, message, input) {
                                 if (id == message.senderID) {
                                     var text = 'You cannot send notifications to yourself.';
                                     api.sendMessage(text, message.threadID);
-                                    console.log(text);
-                                    // } else if (v.contains(v.ignoreArray, id)) {
-                                    //     log.info(participantName + ' is in the ignoreArray');
+                                    log.info(text);
                                 } else if (id == v.botID) {
                                     log.info('ignore id for own bot');
                                 } else {
@@ -94,6 +97,6 @@ function addnotifyData(api, message, input) {
 }
 
 module.exports = {
-    notifyData: notifyData,
-    createNotifyData: createNotifyData
+    listener: listener,
+    notifyData: notifyData
 }

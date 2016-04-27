@@ -2,7 +2,7 @@ var log = require("npmlog");
 var v = require('./globalVariables');
 var f = require('./firebase');
 
-function listen(api, message, input) {
+function listener(api, message, input) {
     if (!v.contains(input, '@' + v.botNameL)) return;
     if (v.contains(input, '--online')) {
         v.continue = false;
@@ -36,6 +36,6 @@ function check(api, message) {
 }
 
 module.exports = {
-    listen: listen,
+    listener: listener,
     check: check
 }

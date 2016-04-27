@@ -3,6 +3,19 @@ var log = require("npmlog");
 var v = require('./globalVariables');
 var f = require('./firebase');
 
+function listener(api, message, input) {
+    if (input.slice(0, 7) == '--save ' && input.length > 7) {
+        v.continue = false;
+        save(api, message, input.slice(7));
+    } else if (input == '--saved') {
+        v.continue = false;
+        get(api, message);
+    } else if (input == '--erase') {
+        v.continue = false;
+        f.setData(api, message, v.f.Saved.child(message.threadID).child(message.senderID), null, 'Erased saved text');
+    }
+}
+
 function save(api, message, input) {
     if (!v.firebaseOn) {
         log.error('firebase is not enabled, see initializeFirebase');
@@ -37,6 +50,7 @@ function get(api, message) {
 }
 
 module.exports = {
+    listener: listener,
     save: save,
     get: get
 }
