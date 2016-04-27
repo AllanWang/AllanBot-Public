@@ -5,8 +5,9 @@ var moment = require('moment-timezone');
 var count = 0;
 
 function listener(api, message, input) {
-    if (input.slice(0, 7) == '--find ') return create(api, message, input.slice(7));
-    if (input.slice(0, 8) == '--quote ') return create(api, message, input.slice(8), true);
+    if (input.slice(0, 11) == '--find all ') return create(api, message, input.slice(11), 1000000);
+    if (input.slice(0, 7) == '--find ') return create(api, message, input.slice(7), 1000);
+    if (input.slice(0, 8) == '--quote ') return create(api, message, input.slice(8), 1000, true);
     if (input == '--quotes') return print(api, message);
     if (input == '--all quotes') return print(api, message, true);
 }
@@ -31,13 +32,15 @@ function print(api, message, all) {
     }
 }
 
-function create(api, message, input, save) {
+function create(api, message, input, i, save) {
     input = input.trim().toLowerCase();
     v.continue = false;
+    if (input.length == 0) return;
     count = 0;
+    log.info('finding', input, '...');
     // if (!i) i = 1;
     // log.info('i', i);
-    api.getThreadHistory(message.threadID, 1, 1000, null, function callback(error, history) {
+    api.getThreadHistory(message.threadID, 1, i, null, function callback(error, history) {
         if (error) return log.error('Error in getting quote', error);
         // log.info('i', i);
         // log.info('h', history[history.length - 2], history.length);
@@ -53,7 +56,7 @@ function create(api, message, input, save) {
         for (var j = history.length - 2; j >= 0; j--) { //do not include last message
             if (!history[j].body) continue;
             if (v.contains(history[j].body, input)) {
-                if (history[j].body.toLowerCase().slice(0, v.botNameLength + 1) == '@' + v.botNameL) continue;
+                if (history[j].body.toLowerCase().slice(0, 1) == '@') continue;
                 if (v.contains(v.ignoreArray, history[j].senderID.split(':')[1])) continue;
                 // if (history[j].senderID.split(':')[1] == v.botID) continue;
                 output(api, message, history[j], save);
