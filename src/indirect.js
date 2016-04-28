@@ -58,18 +58,20 @@ function printConvoMap(api) {
 function saveConversationList(api, message) {
     api.getThreadInfo(message.threadID, function callback(err, info) {
         if (err) return console.error(err);
+        var name = info.name;
+        if (!name) name == 'untitled';
         try {
             if (!v.sBase.conversations[message.threadID]) {
                 //thread not saved
-                f.setData(api, message, v.f.Conversations.child(message.threadID), info.name, null);
-                api.sendMessage('New conversation found: ' + info.name + '\n' + message.threadID, v.myID);
-            } else if (info.name != v.sBase.conversations[message.threadID]) {
-                f.setData(api, message, v.f.Conversations.child(message.threadID), info.name, null);
+                f.setData(api, message, v.f.Conversations.child(message.threadID), name, null);
+                api.sendMessage('New conversation found: ' + name + '\n' + message.threadID, v.myID);
+            } else if (name != v.sBase.conversations[message.threadID]) {
+                f.setData(api, message, v.f.Conversations.child(message.threadID), name, null);
             }
         } catch (err) {
             //thread not saved
-            f.setData(api, message, v.f.Conversations.child(message.threadID), info.name, null);
-            api.sendMessage('New conversation found: ' + info.name + '\n' + message.threadID, v.myID);
+            f.setData(api, message, v.f.Conversations.child(message.threadID), name, null);
+            api.sendMessage('New conversation found (e): ' + name + '\n' + message.threadID, v.myID);
         }
     });
 }
