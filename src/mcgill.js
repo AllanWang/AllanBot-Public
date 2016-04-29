@@ -28,7 +28,7 @@ function courseFinder(api, message, input) {
             });
             // api.sendMessage('Content not found', message.threadID);
         } else {
-            api.sendMessage('Error occurred', message.threadID);
+            api.sendMessage(course + ' is an invalid course name', message.threadID);
         }
     });
 }
