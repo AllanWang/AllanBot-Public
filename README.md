@@ -4,7 +4,7 @@ This is a node.js module that contains helper functions used in AllanBot.
 
 The bot uses the unofficial [facebook-chat-api](https://github.com/Schmavery/facebook-chat-api), as well as [firebase](https://www.firebase.com/) among other things.
 
-The bot can be seen [here](https://www.facebook.com/profile.php?id=100004410158491).
+The bot can be seen [here](https://www.facebook.com/profile.php?id=100004410158491). (type "@allanbot help" to see all the features!)
 
 ---------------------------
 

@@ -21,7 +21,8 @@ var ab = [
     'quote',
     'chatEmoji',
     'spam',
-    'echo'
+    'echo',
+    'mcgill' //test file
 ]
 
 ab.map(function(sub) {
@@ -229,8 +230,10 @@ function listen(message) {
 
     if (v.b.endlessTalk) ab.endlessTalk.inAction(api, message); //should be disabled if offline
 
-    //Input stuff goes here
+    if (v.b.mcgill) ab.mcgill.listener(api, message, message.body);
 
+    if (!v.continue) return;
+    //Input stuff goes here
     if (input) {
         log.info('Input', input);
 

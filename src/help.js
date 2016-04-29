@@ -3,7 +3,7 @@ var v = require('./globalVariables');
 var helpBoolean = 0;
 var i = 0;
 
-var index = ['saveText', 'translate', 'quickNotifications', 'remind', 'quote', 'chatColour', 'chatTitle', 'nickname', 'echo', 'endlessTalk'];
+var index = ['saveText', 'translate', 'quickNotifications', 'remind', 'quote', 'chatColour', 'chatTitle', 'nickname', 'echo', 'endlessTalk', 'mcgill'];
 var numbers = {};
 
 var title = {
@@ -17,7 +17,8 @@ var title = {
     nickname: 'Chat nicknames',
     chatTitle: 'Chat title',
     translate: 'Translate',
-    quote: 'Quote/Find/Count'
+    quote: 'Quote/Find/Count',
+    mcgill: 'McGill Features'
         // indirect: '',
         // translate,
 };
@@ -46,12 +47,14 @@ function menu(api, message) {
     v.continue = false;
     i = 0;
     numbers = {};
-    var sTitle = 'Please type the number corresponding to what you wish to know about.\n\n0. Complete instructions';
+    var sTitle = 'Please type the number corresponding to what you wish to know about.\n\n0.  Complete instructions';
     for (var c = 0; c < index.length; c++) {
         if (v.b[index[c]]) {
             i++;
             numbers[i] = index[c];
-            sTitle += '\n' + i + '. ' + title[index[c]];
+            sTitle += '\n' + i + '. ';
+            if (i < 10) sTitle += ' ';
+            sTitle += title[index[c]];
         }
     }
 
@@ -90,7 +93,9 @@ function menu(api, message) {
         quote: atbot + ' --find [text]" will display the latest message containing [text].\n' + atbot +
             ' --quote [text]" will do the same thing but will also save it \nYou may view the saved quotes via ' + atbot +
             ' --quotes" or ' + atbot + ' --all quotes" to see the quotes saved by everyone in this conversation.\n' + atbot +
-            ' --count" will display the number of messages in the conversation'
+            ' --count" will display the number of messages in the conversation',
+
+        mcgill: '"@mcgill [course]" will display some information on that course (ie @mcgill biol200)'
     };
 
     if (v.devMode) {
