@@ -58,7 +58,7 @@ function create(api, message, input, i, save) {
         if (count == 0) {
             api.sendMessage('Still looking for ' + input + '...', message.threadID);
         }
-    }, 3000);
+    }, 5000);
     api.getThreadHistory(message.threadID, 1, i, null, function callback(error, history) {
         if (error) return log.error('Error in getting quote', error);
         for (var j = history.length - 2; j >= 0; j--) { //do not include last message
@@ -70,8 +70,8 @@ function create(api, message, input, i, save) {
                 }
                 if (v.contains(v.ignoreArray, history[j].senderID.split(':')[1])) continue;
                 output(api, message, history[j], save);
-                if (save) return;
                 count++;
+                if (save) return;
                 if (count >= 5) return;
             }
         }
