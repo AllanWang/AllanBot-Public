@@ -58,6 +58,40 @@ function addnotifyData(api, message, input) {
             if (err) return console.error(err);
             api.getUserInfo(info.participantIDs, function(err, ret) {
                 if (err) return console.error(err);
+
+                //checks for exact matches
+
+                for (var id in ret) {
+                    if (ret.hasOwnProperty(id)) {
+                        var participantName = ret[id].firstName.toLowerCase();
+                        if (participantName == name) {
+                            // Match. Do matched stuff.
+                            count++;
+                            if (id == message.senderID) {
+                                count--; //ignore count for self
+                            } else if (id == v.botID) {
+                                log.info('ignore id for own bot');
+                            } else {
+                                log.info("correct id is " + id);
+                                try {
+                                    if (v.sBase.notificationMessages[message.threadID][id]) {
+                                        text = v.sBase.notificationMessages[message.threadID][id] + '\n' + fullText;
+                                    } else {
+                                        text = intro + fullText;
+                                    }
+                                } catch (err) {
+                                    text = intro + fullText;
+                                } finally {
+                                    f.setData(api, message, v.f.Notifications.child(message.threadID).child(id), text, 'Notification saved for ' + ret[id].name + ':\n' + fullText);
+                                }
+                            }
+                        }
+                    }
+                }
+                if (count > 0) return;
+
+                //second run checking if input is contained in name
+
                 for (var id in ret) {
                     if (ret.hasOwnProperty(id)) {
                         var participantName = ret[id].name.toLowerCase();
