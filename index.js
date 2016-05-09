@@ -203,11 +203,10 @@ function listen(message) {
 
     //input checker
     var input = '';
-    if (message.isGroup) {
-        if ((message.body.toLowerCase().slice(0, v.botNameLength + 2) == '@' + v.botNameL + ' ') && message.body.length > (v.botNameLength + 2)) {
-            input = message.body.slice(v.botNameLength + 2);
-        }
-    } else if (!v.contains(v.ignoreArray, message.threadID)) { //make sure it isn't a one on one convo with a bot
+
+    if ((message.body.toLowerCase().slice(0, v.botNameLength + 2) == '@' + v.botNameL + ' ') && message.body.length > (v.botNameLength + 2)) {
+        input = message.body.slice(v.botNameLength + 2);
+    } else if (!v.contains(v.ignoreArray, message.threadID) && !message.isGroup) { //make sure it isn't a one on one convo with a bot
         input = message.body;
     }
 
