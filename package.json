@@ -1,6 +1,6 @@
 {
     "name": "allanbot",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "dependencies": {
         "mitsuku-api": "git://github.com/eleventigers/mitsuku-api",
         "request-promise": "git://github.com/request/request-promise#v2.0.1",
