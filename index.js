@@ -197,7 +197,7 @@ function listen(message) {
     if (message.threadID == v.myID) {
         if (v.b.indirect) {
             ab.indirect.distantMessages(api, message);
-            if (message.body == '--map') ab.indirect.printConvoMap(api);
+            if (message.body == '--map') return ab.indirect.printConvoMap(api);
         }
     }
 

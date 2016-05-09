@@ -58,8 +58,8 @@ function printConvoMap(api) {
 function saveConversationList(api, message) {
     api.getThreadInfo(message.threadID, function callback(err, info) {
         if (err) return console.error(err);
-        var name = info.name;
-        if (!name) name == 'untitled';
+        var name = info.name.trim();
+        if (!name || name == '') name == 'untitled';
         try {
             if (!v.sBase.conversations[message.threadID]) {
                 //thread not saved
