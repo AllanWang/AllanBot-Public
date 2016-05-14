@@ -70,14 +70,14 @@ function menu(api, message) {
         saveText: atbot +
             ' --save xxx" will save the input xxx with a timestamp. These saved messages are specific to each conversation,' +
             ' and are not related to other messages you save in other messages.\n' +
-            atbot + '--saved" will show the saved input.\n' + atbot + ' --erase" will erase the saved input.',
+            atbot + ' --saved" will show the saved input.\n' + atbot + ' --erase" will erase the saved input.',
 
         chatColour: atbot +
             ' #000000" will change the chat colour to 000000. That colour can be any 6 digit hex colour, or the name of a colour.',
 
         quickNotifications: 'You need to type ' + atbot + ' --eqn" to enable this feature.\n' + atbot +
             ' @[name]: [content]" will notify [name] once he/she responds to ensure that the message is viewed.\n' + atbot +
-            '--dqn" will disable this feature.',
+            ' --dqn" will disable this feature.',
 
         remind: atbot + ' remind [name] @[time] [content]" will create a reminder for [name] in the future.' +
             '\n[time] can be formatted by HH:mm (with or without am/pm) or by a full date(YYYY/MM/DD HH:mm)',
@@ -88,7 +88,7 @@ function menu(api, message) {
 
         translate: atbot +
             ' -t [language] [text]" will translate [text]. [language] may either be the language you are translating to, or [input]:[output] (ie @' +
-            v.botNameL + '-t french:russian bonjour)\n' + atbot + ' - t" will display all the available languages',
+            v.botNameL + '-t french:russian bonjour)\n' + atbot + ' -t" will display all the available languages',
 
         quote: atbot + ' --find [text]" will display the latest message containing [text].\n' + atbot +
             ' --quote [text]" will do the same thing but will also save it \nYou may view the saved quotes via ' + atbot +

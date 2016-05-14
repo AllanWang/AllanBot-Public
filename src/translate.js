@@ -127,8 +127,21 @@ function getLanKey(s) {
 function listener(api, message, input) {
     if (input.trim() == '-t') {
         api.sendMessage(printLangKey(), message.threadID);
+    } else if (input.slice(0, 4) == '-tk ') {
+        getShortKey(api, message, input.slice(4));
     } else if (input.slice(0, 3) == '-t ' && input.length > 6) {
         parse(api, message, input.slice(3));
+    }
+}
+
+
+function getShortKey(api, message, input) {
+    v.continue = false;
+    input = input.trim();
+    if (!langMap[input]) {
+        api.sendMessage(input + ' is an invalid key.', message.threadID);
+    } else {
+        api.sendMessage(input + "'s key is " + langMap[input], message.threadID);
     }
 }
 
@@ -175,7 +188,8 @@ function parse(api, message, input) {
     } else {
         toLang = l;
     }
-    // log.info('from', fromLang, 'to', toLang, 'c', input.slice(input.indexOf(' ') + 1));
+
+    // log.warn('from', fromLang, 'to', toLang, 'c', input.slice(input.indexOf(' ') + 1));
     request(fromLang, toLang, input.slice(input.indexOf(' ') + 1), function callback(err, response) {
         api.sendMessage(response, message.threadID);
     });
