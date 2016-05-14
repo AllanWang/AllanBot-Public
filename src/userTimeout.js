@@ -24,10 +24,6 @@ function afterRestart(api) {
 }
 
 function userTimeout(api, message, id, name) {
-    if (!v.firebaseOn) {
-        log.error('firebase is not enabled, see initializeFirebase');
-        return;
-    }
     v.continue = false;
     if (id == v.botID) {
         api.sendMessage("Sorry, I don't want to ban myself.", message.threadID);

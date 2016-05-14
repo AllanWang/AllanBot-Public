@@ -18,10 +18,6 @@ function listener(api, message, input) {
 }
 
 function save(api, message, input) {
-    if (!v.firebaseOn) {
-        log.error('firebase is not enabled, see initializeFirebase');
-        return;
-    }
     v.continue = false;
     input = moment.utc().format('MM/DD/YYYY') + ": " + input;
     try {
@@ -34,10 +30,6 @@ function save(api, message, input) {
 }
 
 function get(api, message) {
-    if (!v.firebaseOn) {
-        log.error('firebase is not enabled, see initializeFirebase');
-        return;
-    }
     v.continue = false;
     try {
         if (v.sBase.savedMessages[message.threadID][message.senderID]) {

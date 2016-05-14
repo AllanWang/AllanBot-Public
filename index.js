@@ -22,11 +22,12 @@ var ab = [
     'chatEmoji',
     'spam',
     'echo',
+    'dataCollection',
     'mcgill' //test file
 ]
 
 ab.map(function(sub) {
-    if (sub != 'basic') { //basic is not a valid boolean
+    if (sub != 'basic' && sub != 'dataCollection') { //basic is not a valid boolean
         v.b[sub] = false; //add all other ab values to the boolean map
     }
     ab[sub] = require('./src/' + sub);
@@ -91,7 +92,7 @@ function setOptions(options) {
     }
     if (!v.myID) log.warn('ID not set; a few things won\'t work.');
     if (!v.contains(v.ignoreArray, v.botID)) v.ignoreArray.unshift(v.botID);
-    if (!v.firebaseOn) log.warn('Firebase is not set; a lot of features will not work');
+    if (!v.firebaseOn) log.warn('Firebase is not set; nothing will work');
     log.info('--------------------\n     Welcome ' + v.botName + '\n     --------------------');
 }
 
@@ -106,7 +107,7 @@ function enableFeatures(options) {
         switch (key) {
             case 'everything':
                 for (var b in v.b) {
-                    if (b == 'spam') continue;
+                    if (b == 'spam' || b == 'errorNotifications') continue;
                     v.b[b] = options.everything;
                 }
                 break;
@@ -139,12 +140,14 @@ function enableFeatures(options) {
         if (v.b.remind) {
             setTimeout(function() {
                 ab.remind.getScheduledMessages();
+                ab.dataCollection.full(api);
             }, 3000);
             setTimeout(function() {
                 ab.remind.checkTimeNotification(api);
             }, 5000);
             setInterval(function() {
                 v.nextScheduledMessageNotif = true;
+                ab.dataCollection.full(api);
             }, 500000);
             setInterval(function() {
                 if (!v.b.remind) return;
