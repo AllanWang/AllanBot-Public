@@ -6,6 +6,7 @@ var f = require('./firebase');
 function listener(api, message, input) {
     if (input.slice(0, 7) == '--save ' && input.length > 7) {
         v.continue = false;
+        log.info('--- Save text ---');
         save(api, message, input.slice(7));
     } else if (input == '--saved') {
         v.continue = false;

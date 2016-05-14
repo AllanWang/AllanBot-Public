@@ -14,6 +14,7 @@ function listener(api, message, input) {
             v.continue = false;
             try {
                 if (v.sBase.boolean.quick_notify[message.senderID]) {
+                    log.info('--- Quick Notify ---');
                     addnotifyData(api, message, input);
                 } else {
                     api.sendMessage('To enable quick notifications, type "@' + v.botNameL + ' --eqn"', message.threadID);

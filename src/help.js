@@ -112,6 +112,7 @@ function specific(api, message) {
     v.continue = false;
     var num = parseInt(message.body);
     if (isNaN(num)) return;
+    if (num > index.length) return;
     var full = '';
     if (num == 0) {
         full = v.botName + ' is a Facebook Chat Bot that can be called by using "@' + v.botNameL +

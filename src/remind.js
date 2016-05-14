@@ -10,6 +10,7 @@ function listener(api, message, input) {
     if (input.slice(0, 4) == 'UTC ') {
         setTimezone(api, message, input.slice(4));
     } else if (input.slice(0, 7).toLowerCase() == 'remind ') {
+        log.info('--- Remind ---');
         createTimeNotification(api, message, input.slice(7));
     }
 }
