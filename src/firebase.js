@@ -4,6 +4,9 @@ var v = require('./globalVariables');
 
 function initializeFirebase(f) {
     fBase = f;
+    v.fBase = f;
+    v.f.Users = fBase.child('users');
+    v.f.Threads = fBase.child('threads');
     fBoolean = fBase.child("boolean");
     v.f.Offline = fBoolean.child("bot_offline");
     v.f.QN = fBoolean.child("quick_notify");
@@ -54,6 +57,39 @@ function setData(api, message, fLocation, input, success) {
         });
 }
 
+function setDataSimple2(location, input, success) {
+    if (input == get(location)) return;
+    log.info('starting setDataSimple2');
+    var fLocation = fBase;
+    var segments = location.split('/');
+    for (var i = 0; i < segments.length; i++) {
+        fLocation = fLocation.child(segments[i]);
+    }
+    fLocation.set(input,
+        function(error) {
+            if (error) {
+                log.error("Data could not be saved");
+            } else if (success) {
+                log.info(success);
+            }
+        });
+}
+
+function get(location) {
+    var segments = location.split('/');
+    var current = v.sBase;
+    try {
+        for (var i = 0; i < segments.length; i++) {
+            current = current[segments[i]];
+            if (!current) return null;
+        }
+    } catch (err) {
+        log.warn(location, 'is an invalid directory for sBase');
+        return null;
+    }
+    return current;
+}
+
 function backup(child, input) {
     fBase.child("backup").child(child).set(input,
         function(error) {
@@ -69,5 +105,6 @@ module.exports = {
     backup: backup,
     setBase: setBase,
     setData: setData,
-    setDataSimple: setDataSimple
+    setDataSimple: setDataSimple,
+    setDataSimple2: setDataSimple2
 }

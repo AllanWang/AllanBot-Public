@@ -8,6 +8,8 @@ var featureBooleans = {
 };
 
 var firebase = {
+    Users: null,
+    Threads: null,
     Offline: null,
     QN: null,
     Nick: null,
@@ -41,6 +43,7 @@ module.exports = {
     devMode: false,
     ignoreArray: [],
     sBase: null,
+    fBase: null,
     b: featureBooleans,
     f: firebase,
     contains: function(message, value) {
@@ -57,8 +60,15 @@ module.exports = {
         return (name.slice(name.length - 3).toLowerCase() == 'bot');
     },
     error: function(api, title, err) {
-        if (this.b.errorNotifications) api.sendMessage('Error in ' + title, this.myID);
         log.error('--- ' + title + ' ---\n' + err);
+        if (this.b.errorNotifications) {
+            api.sendMessage('Error in ' + title, this.myID);
+            try {
+                api.sendMessage(err, this.myID);
+            } catch (error) {
+                //do nothing
+            }
+        }
     }
 
 
