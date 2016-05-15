@@ -37,6 +37,8 @@ function addnotifyData(api, message, input) {
     var fullText = input.slice(1);
     var i = fullText.indexOf(":");
     if (i < 1) return;
+    var h = fullText.indexOf("--");
+    if (h != -1 && h < i) return; //ignore commands
     var nameOrig = fullText.slice(0, i);
     fullText = fullText.slice(i + 1).trim();
     var name = nameOrig.toLowerCase();
