@@ -1,5 +1,4 @@
 var log = require("npmlog");
-var myID = null;
 
 var featureBooleans = {
     errorNotifications: false,
@@ -28,12 +27,13 @@ var firebase = {
 module.exports = {
     botName: null,
     botNameL: null,
-    myID: this.myID,
+    myID: null,
     myName: null,
     botID: null,
     botNameLength: null,
     firebaseOn: false,
     continue: true,
+    section: null,
     pandoraEnabled: false,
     mitsukuMode: true,
     isMuted: false,
@@ -58,18 +58,5 @@ module.exports = {
     },
     isBotName: function(name) {
         return (name.slice(name.length - 3).toLowerCase() == 'bot');
-    },
-    error: function(api, title, err) {
-        log.error('--- ' + title + ' ---\n' + err);
-        if (this.b.errorNotifications) {
-            api.sendMessage('Error in ' + title, this.myID);
-            try {
-                api.sendMessage(err, this.myID);
-            } catch (error) {
-                //do nothing
-            }
-        }
     }
-
-
 }

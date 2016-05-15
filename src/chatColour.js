@@ -7,9 +7,11 @@ var colorSuggestionName = '';
 var colorList = ['#0084ff', '#44bec7', '#fa3c4c', '#d696bb', '#6699cc', '#13cf13', '#ff7e29', '#e68585', '#7646ff', '#20cef5', '#ff5ca1'];
 
 function change(api, message, input) {
+    v.section = 'chatColour change';
     if (input.slice(0, 1) != '#') return;
     v.continue = false;
     var hex = 'placeholder';
+    // a++;
     if (input.slice(1) == 'random') {
         var index = Math.floor(Math.random() * (colorList.length - 1)); //min value is 0, max value is inclusive
         hex = colorList[index];
@@ -17,24 +19,14 @@ function change(api, message, input) {
         var color = new RGBColor(input.slice(1));
         if (color.ok) { // 'ok' is true when the parsing was a success
             hex = color.toHex();
+        } else if (f.get('threads/' + message.threadID + '/colors/' + input.slice(1).replace(/\s+/g, ''))) {
+            hex = f.get('threads/' + message.threadID + '/colors/' + input.slice(1).replace(/\s+/g, ''));
         } else {
-            try {
-                if (v.sBase.colors_custom[message.threadID][input.slice(1).replace(/\s+/g, '')] != null) {
-                    hex = v.sBase.colors_custom[message.threadID][input.slice(1).replace(/\s+/g, '')];
-                } else {
-                    //color not found
-                    api.sendMessage('I cannot change the chat color to ' + input.slice(1) + ".\n\nWould you like to suggest a color for this?\n(Make sure it's a 6 digit hex color, including the '#')", message.threadID);
-                    colorSuggestionBoolean = message.senderID;
-                    colorSuggestionName = input.slice(1).replace(/\s+/g, '');
-                    return log.info('RGB error');
-                }
-            } catch (err) {
-                //color not found
-                api.sendMessage('I cannot change the chat color to ' + input.slice(1) + ".\n\nWould you like to suggest a color for this?\n(Make sure it's a 6 digit hex color, including the '#')", message.threadID);
-                colorSuggestionBoolean = message.senderID;
-                colorSuggestionName = input.slice(1).replace(/\s+/g, '');
-                return log.info('RGB error');
-            }
+            //color not found
+            api.sendMessage('I cannot change the chat color to ' + input.slice(1) + ".\n\nWould you like to suggest a color for this?\n(Make sure it's a 6 digit hex color, including the '#')", message.threadID);
+            colorSuggestionBoolean = message.senderID;
+            colorSuggestionName = input.slice(1).replace(/\s+/g, '');
+            return log.info('RGB error');
         }
     }
     api.changeThreadColor(hex, message.threadID, function callback(err) {
@@ -46,13 +38,14 @@ function change(api, message, input) {
 }
 
 function listener(api, message) {
+    v.section = 'chatColour listener';
     if (message.senderID != colorSuggestionBoolean) return;
     colorSuggestionBoolean = 0;
     if (!v.contains(message.body, '#')) return;
     v.continue = false;
     var c = '#' + message.body.split('#')[1];
     if (/^#[0-9A-F]{6}$/i.test(c)) {
-        f.setData(api, message, v.f.ColorSuggestions.child(message.threadID).child(colorSuggestionName), c, 'Suggestion saved; thanks!');
+        f.setData2(api, message, 'threads/' + message.threadID + '/colors/' + colorSuggestionName, c, 'Suggestion saved; thanks!');
         change(api, message, c);
     } else {
         api.sendMessage("That isn't a valid hex color.", message.threadID);
@@ -67,6 +60,7 @@ function listener(api, message) {
  * @license Use it if you like it
  */
 function RGBColor(color_string) {
+    v.section = 'chatColour RGBColor';
     this.ok = false;
 
     // strip any leading #

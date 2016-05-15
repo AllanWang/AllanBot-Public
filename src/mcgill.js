@@ -4,12 +4,14 @@ var v = require('./globalVariables');
 var cheerio = require('cheerio');
 
 function listener(api, message, input) {
+    v.section = 'mcgill listener';
     if (input.slice(0, 8) != '@mcgill ') return;
     input = input.slice(8);
     courseFinder(api, message, input);
 }
 
 function courseFinder(api, message, input) {
+    v.section = 'mcgill courseFinder';
     v.continue = false;
     var course = input.match(/[a-zA-Z]+|[0-9]+/g);
     if (course.length != 2) return api.sendMessage(course + ' is an invalid course name', message.threadID);

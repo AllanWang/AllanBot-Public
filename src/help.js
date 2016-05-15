@@ -40,10 +40,12 @@ function help(api, message) {
 */
 
 function listener(api, message, input) {
+    v.section = 'help listener';
     if (input.length < 8 && v.contains(input, 'help')) menu(api, message);
 }
 
 function menu(api, message) {
+    v.section = 'help menu';
     v.continue = false;
     i = 0;
     numbers = {};
@@ -107,6 +109,7 @@ function menu(api, message) {
 }
 
 function specific(api, message) {
+    v.section = 'help specific';
     if (helpBoolean != message.senderID) return;
     helpBoolean = 0;
     v.continue = false;

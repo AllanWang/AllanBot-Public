@@ -4,6 +4,7 @@ var f = require('./firebase');
 var translate = require('./translate');
 
 function listener(api, message, input) {
+    v.section = 'nickname listener';
     if (input == '--nonickname' || input == '--nnickname') {
         return changeNickname(api, message, false);
     } else if (input == '--yesnickname' || input == '--ynickname') {
@@ -13,34 +14,31 @@ function listener(api, message, input) {
 }
 
 function changeNickname(api, message, t) {
+    v.section = 'nickname changeNickname';
     v.continue = false;
     if (t) { //restore nicknames
-        try {
-            if (v.sBase.nicknames[message.threadID]) {
-                for (var n in v.sBase.nicknames[message.threadID]) {
-                    api.changeNickname(v.sBase.nicknames[message.threadID][n], message.threadID, n, function callback(err) {
-                        if (err) {
-                            f.setDataSimple(v.f.Nick.child(message.threadID).child(n), null, null);
-                            return console.log('changeNickname failed, removed nickname');
-                        }
-                    });
-                }
-            } else {
-                api.sendMessage('No nicknames saved.', message.threadID);
+        var nicknames = f.get('threads/' + message.threadID + '/nicknames');
+        if (nicknames) {
+            for (var n in nicknames) {
+                api.changeNickname(nicknames[n], message.threadID, n, function callback(err) {
+                    if (err) {
+                        f.setDataSimple2('threads/' + message.threadID + '/nicknames/' + message.senderID, null, null);
+                        log.error('changeNickname failed for ', n, 'removed nickname');
+                    }
+                });
             }
-        } catch (err) {
+        } else {
             api.sendMessage('No nicknames saved.', message.threadID);
-            return console.log(err);
         }
     } else { //remove nicknames
         api.getThreadInfo(message.threadID, function callback(err, info) {
             if (err) return console.error(err);
-            log.info('info nick ' + info.nicknames.toString());
+            // log.info('info nick ' + info.nicknames.toString());
             for (var id in info.nicknames) {
                 // console.log('id ' + id);
-                f.setDataSimple(v.f.Nick.child(message.threadID).child(id), info.nicknames[id], null);
+                f.setDataSimple2('threads/' + message.threadID + '/nicknames/' + id, info.nicknames[id], null);
                 api.changeNickname('', message.threadID, id, function callback(err) {
-                    if (err) return console.error(err);
+                    if (err) return log.error(err);
                 });
 
             }
@@ -49,6 +47,7 @@ function changeNickname(api, message, t) {
 }
 
 function changeNicknameBasic(api, message, input) {
+    v.section = 'nickname changeNicknameBasic';
     if (input.toLowerCase().slice(0, 8) != 'nickname') return;
     if (input.charAt(8) == ':') {
         v.continue = false;

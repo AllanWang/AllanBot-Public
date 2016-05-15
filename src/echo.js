@@ -1,6 +1,7 @@
 var v = require('./globalVariables');
 
 function listener(api, message, input) {
+    v.section = 'echo listener';
     if (input.slice(0, 7) == '--echo ' && input.length > 7) {
         var s = input.slice(7);
         if (!v.godMode) { //TODO add these things
@@ -17,6 +18,7 @@ function listener(api, message, input) {
 }
 
 function echo(api, message, input) {
+    v.section = 'echo echo';
     v.continue = false;
     api.sendMessage(input, message.threadID);
 }

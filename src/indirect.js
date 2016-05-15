@@ -1,19 +1,19 @@
 var log = require("npmlog");
 var v = require('./globalVariables');
 var f = require('./firebase');
+var d = require('./dataCollection');
 
 function messageInWaiting(api, message) {
-    try {
-        if (v.sBase.messages_in_waiting[message.threadID]) {
-            api.sendMessage(v.sBase.messages_in_waiting[message.threadID], message.threadID);
-            f.setData(api, message, v.f.MIW.child(message.threadID), null, null);
-        }
-    } catch (err) {
-        //carry on; no messages
+    v.section = 'indirect messageInWaiting';
+    var msg = f.get('threads/' + message.threadID + '/messages_in_waiting');
+    if (msg) {
+        api.sendMessage(msg, message.threadID);
+        f.setDataSimple2('threads/' + message.threadID + '/messages_in_waiting', null, null);
     }
 }
 
 function distantMessages(api, message) {
+    v.section = 'indirect distantMessages';
     if (message.threadID != v.myID) return;
     if (message.body.slice(0, 1) != '@') return;
     var content = message.body.slice(1);
@@ -29,7 +29,7 @@ function distantMessages(api, message) {
     api.sendMessage(content, threadID, function callback(err) {
         if (err) {
             //kicked out of group, switch to method 0
-            f.setData(api, message, v.f.MIW.child(threadID), content, "To be sent to " + threadID + ':\n' + content);
+            f.setData(api, message, 'threads/' + message.threadID + '/messages_in_waiting', content, "To be sent to " + threadID + ':\n' + content);
             return;
         }
 
@@ -38,42 +38,19 @@ function distantMessages(api, message) {
 }
 
 function printConvoMap(api) {
+    v.section = 'indirect printConvoMap';
     v.continue = false;
-    try {
-        if (v.sBase.conversations) {
-            var s = 'Convo map\n';
-            for (var c in v.sBase.conversations) {
-                s += '\n' + c + ': ' + v.sBase.conversations[c];
-            }
-            api.sendMessage(s, v.myID);
-        } else {
-            api.sendMessage('No thread list found under ' + child, v.myID);
-        }
-    } catch (err) {
-        api.sendMessage('No thread list found under ' + child, v.myID);
-        return console.log(err);
+    var map = f.get('threads');
+    if (!map) return api.sendMessage('No threads found', v.myID);
+    var s = 'Convo map\n';
+    for (var c in map) {
+        s += '\n' + c + ': ' + map[c].name;
     }
 }
 
 function saveConversationList(api, message) {
-    api.getThreadInfo(message.threadID, function callback(err, info) {
-        if (err) return console.error(err);
-        var name = info.name.trim();
-        if (!name || name == '') name = 'untitled';
-        try {
-            if (!v.sBase.conversations[message.threadID]) {
-                //thread not saved
-                f.setData(api, message, v.f.Conversations.child(message.threadID), name, null);
-                api.sendMessage('New conversation found: ' + name + '\n' + message.threadID, v.myID);
-            } else if (name != v.sBase.conversations[message.threadID]) {
-                f.setData(api, message, v.f.Conversations.child(message.threadID), name, null);
-            }
-        } catch (err) {
-            //thread not saved
-            f.setData(api, message, v.f.Conversations.child(message.threadID), name, null);
-            api.sendMessage('New conversation found (e): ' + name + '\n' + message.threadID, v.myID);
-        }
-    });
+    v.section = 'indirect saveConversationList';
+    if (!f.get('threads/' + message.threadID + '/name')) d.thread(api, message.threadID);
 }
 
 module.exports = {

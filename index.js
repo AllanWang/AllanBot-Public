@@ -140,14 +140,14 @@ function enableFeatures(options) {
         if (v.b.remind) {
             setTimeout(function() {
                 ab.remind.getScheduledMessages();
-                ab.dataCollection.full(api);
+                ab.dataCollection.full(api, 30);
             }, 3000);
             setTimeout(function() {
                 ab.remind.checkTimeNotification(api);
             }, 5000);
             setInterval(function() {
                 v.nextScheduledMessageNotif = true;
-                ab.dataCollection.full(api);
+                ab.dataCollection.full(api, 10);
             }, 500000);
             setInterval(function() {
                 if (!v.b.remind) return;
