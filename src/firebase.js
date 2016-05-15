@@ -103,8 +103,6 @@ module.exports = {
     backup: backup,
     setBase: setBase,
     setData: setData,
-    setData2: setData2,
     setDataSimple: setDataSimple,
-    setDataSimple2: setDataSimple2,
     get: get
 }

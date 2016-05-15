@@ -3,7 +3,7 @@ var v = require('./globalVariables');
 function listener(api, message, input) {
     v.section = 'chatEmoji listener';
     if (input.toLowerCase().slice(0, 6) == 'emoji ' && input.length == 8) {
-        change(api, message, message.body.slice(6));
+        change(api, message, input.slice(6));
     }
 }
 

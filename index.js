@@ -206,6 +206,8 @@ function listen(message) {
             }
         }
 
+        if (v.continue) ab.dataCollection.collect(api, message, message.body);
+
         //input checker
         var input = '';
 
