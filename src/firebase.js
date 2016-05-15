@@ -60,7 +60,10 @@ function setData(api, message, fLocation, input, success) {
 }
 
 function setData2(api, message, location, input, success) {
-    if (input == get(location)) return;
+    if (input == get(location)) {
+        if (success) api.sendMessage('Data has not changed from previously saved input.', message.threadID);
+        return;
+    }
     var fLocation = fBase;
     var segments = location.split('/');
     for (var i = 0; i < segments.length; i++) {

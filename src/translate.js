@@ -118,6 +118,7 @@ var langMap = {
 }
 
 function getLanKey(s) {
+    v.section = 'translate getLanKey';
     if (s in langMap) return langMap[s];
     if (langKey.indexOf(s) != -1) return s;
     invalid = s;
@@ -125,6 +126,7 @@ function getLanKey(s) {
 }
 
 function listener(api, message, input) {
+    v.section = 'translate listener';
     if (input.trim() == '-t') {
         api.sendMessage(printLangKey(), message.threadID);
     } else if (input.slice(0, 4) == '-tk ') {
@@ -136,6 +138,7 @@ function listener(api, message, input) {
 
 
 function getShortKey(api, message, input) {
+    v.section = 'translate getShortKey';
     v.continue = false;
     input = input.trim();
     if (!langMap[input]) {
@@ -146,6 +149,7 @@ function getShortKey(api, message, input) {
 }
 
 function printLangKey() {
+    v.section = 'translate printLangKey';
     v.continue = false;
     var s = 'Available languages:\n\n';
     // var t = '\n\n';
@@ -158,6 +162,7 @@ function printLangKey() {
 
 // Process the request
 function request(fromLang, toLang, phrase, callback) {
+    v.section = 'translate request';
     invalid = '';
     fromLang = getLanKey(fromLang);
     toLang = getLanKey(toLang);
@@ -177,6 +182,7 @@ function request(fromLang, toLang, phrase, callback) {
 }
 
 function parse(api, message, input) {
+    v.section = 'translate parse';
     v.continue = false;
     input = input.trim();
     var l = input.split(' ')[0]
@@ -198,6 +204,7 @@ function parse(api, message, input) {
 
 // Actual translation method
 function translate(fromLang, toLang, phrase) {
+    v.section = 'translate translate';
     /*Sample url
     https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=[text]
     */

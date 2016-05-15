@@ -3,10 +3,11 @@ var v = require('./globalVariables');
 var f = require('./firebase');
 
 function listener(api, message, input) {
+    v.section = 'onOff listener';
     if (!v.contains(input, '@' + v.botNameL)) return;
     if (v.contains(input, '--online')) {
         v.continue = false;
-        f.setData(api, message, v.f.Offline, null, v.botName + ' is now online');
+        f.setData2(api, message, 'offline', null, v.botName + ' is now online');
         if (message.senderID != v.myID) {
             api.getUserInfo(message.senderID, function(err, ret) {
                 if (err) return console.error(err);
@@ -15,23 +16,19 @@ function listener(api, message, input) {
         }
     } else if (v.contains(input, '--offline')) {
         v.continue = false;
-        f.setData(api, message, v.f.Offline, true, v.botName + ' is now offline');
+        f.setData2(api, message, 'offline', true, v.botName + ' is now offline');
         setTimeout(function() {
-            f.setData(api, message, v.f.Offline, null, v.botName + ' is online again');
+            f.setData2(api, message, 'offline', null, v.botName + ' is online again');
         }, 3600000);
     }
 }
 
 function check(api, message) {
-    try {
-        if (v.sBase.boolean.bot_offline) {
-            v.continue = false;
-            if (message.senderID == v.myID && v.contains(message.body, v.botNameL)) {
-                api.sendMessage('I am currently offline', message.threadID);
-            }
-        }
-    } catch (err) {
-        //do nothing
+    v.section = 'onOff check';
+    if (!f.get('offline')) return;
+    v.continue = false;
+    if (message.senderID == v.myID && v.contains(message.body, v.botNameL)) {
+        api.sendMessage('I am currently offline', message.threadID);
     }
 }
 

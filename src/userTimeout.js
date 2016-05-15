@@ -3,33 +3,26 @@ var v = require('./globalVariables');
 var f = require('./firebase');
 
 function afterRestart(api) {
-    try {
-        if (v.sBase.boolean.timeout) {
-            for (var t in v.sBase.boolean.timeout) {
-                var i = t.toString().indexOf('_');
-                if (i == -1) {
-                    api.sendMessage('"_" not found in the timeout key; first run stopping', v.myID);
-                    return;
-                }
-                var thread = t.toString().slice(0, i);
-                var id = t.toString().slice(i + 1);
-                api.sendMessage('I was restarted; adding back ' + v.sBase.boolean.timeout[t] + '.', thread);
-                userUnTimeout(api, id, v.sBase.boolean.timeout[t], thread);
-            }
+    v.section = 'userTimeout afterRestart';
+    var timeoutList = f.get('timeout');
+    if (timeoutList) {
+        for (var t in timeoutList) {
+            var thread = t.split('_')[0];
+            var id = t.split('_')[1];
+            api.sendMessage('I was restarted; adding back ' + timeoutList[t] + '.', thread);
+            userUnTimeout(api, id, timeoutList[t], thread);
         }
-
-    } catch (err) {
-        //no one is still banned; carry no
     }
 }
 
 function userTimeout(api, message, id, name) {
+    v.section = 'userTimeout userTimeout';
     v.continue = false;
     if (id == v.botID) {
         api.sendMessage("Sorry, I don't want to ban myself.", message.threadID);
         return;
     }
-    f.setData(api, message, v.f.Timeout.child(message.threadID + '_' + id), name, name + ", you have been banned for 5 minutes.");
+    f.setData2(api, message, 'timeout/' + message.threadID + '_' + id, name, name + ", you have been banned for 5 minutes.");
     try {
         api.sendMessage('You have been banned from ' + message.threadName + ' for 5 minutes', id);
     } catch (err) {
@@ -47,18 +40,13 @@ function userTimeout(api, message, id, name) {
 }
 
 function userUnTimeout(api, id, name, thread) {
+    v.section = 'userTimeout userUnTimeout';
     v.continue = false;
     api.addUserToGroup(id, thread, function callback(err) {
-        if (err) { //TODO see if this is fixed; api issue
-            // api.sendMessage("uh... I can't add " + name + " back", message.threadID);
-            api.sendMessage('Welcome back ' + name + '; try not to get banned again.', thread);
-            f.setDataSimple(v.f.Timeout.child(thread + '_' + id), null, null);
-            return console.error(err);
-            //facebook error
-        }
+        if (err) console.error(err); //TODO this should have a return, but as there are issues the messages below will show anyways
 
         api.sendMessage('Welcome back ' + name + '; try not to get banned again.', thread);
-        f.setDataSimple(v.f.Timeout.child(thread + '_' + id), null, null);
+        f.setDataSimple('timeout/' + threadID + '_' + id, null, null);
     });
 }
 

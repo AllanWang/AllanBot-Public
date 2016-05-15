@@ -3,23 +3,19 @@ var v = require('./globalVariables');
 var f = require('./firebase');
 
 function listener(api, message, input) {
+    v.section = 'quickNotifications listener';
     if (input.toLowerCase() == '--eqn') {
         v.continue = false;
-        f.setData(api, message, v.f.QN.child(message.senderID), true, 'Quick notifications enabled.\nYou only need to do this once until you disable it.');
+        f.setData2(api, message, 'users/' + message.senderID + '/QN', true, 'Quick notifications enabled.\nYou only need to do this once until you disable it.');
     } else if (input.toLowerCase() == '--dqn') {
         v.continue = false;
-        f.setData(api, message, v.f.QN.child(message.senderID), null, 'Quick notifications disabled.');
+        f.setData2(api, message, 'users/' + message.senderID + '/QN', null, 'Quick notifications disabled.');
     } else if ((!v.isMuted || v.godMode) && message.threadID != v.myID) {
         if (input.slice(0, 1) == '@' && input.length > 5 && input.indexOf(":") > 1) {
             v.continue = false;
-            try {
-                if (v.sBase.boolean.quick_notify[message.senderID]) {
-                    log.info('--- Quick Notify ---');
-                    addnotifyData(api, message, input);
-                } else {
-                    api.sendMessage('To enable quick notifications, type "@' + v.botNameL + ' --eqn"', message.threadID);
-                }
-            } catch (err) {
+            if (f.get('users/' + message.senderID + '/QN')) {
+                addnotifyData(api, message, input);
+            } else if (!v.contains(v.ignoreArray, message.senderID)) {
                 api.sendMessage('To enable quick notifications, type "@' + v.botNameL + ' --eqn"', message.threadID);
             }
         }
@@ -27,17 +23,16 @@ function listener(api, message, input) {
 }
 
 function notifyData(api, message) {
-    try {
-        if (v.sBase.notificationMessages[message.threadID][message.senderID]) {
-            api.sendMessage(v.sBase.notificationMessages[message.threadID][message.senderID], message.threadID);
-            f.setData(api, message, v.f.Notifications.child(message.threadID).child(message.senderID), null, null);
-        }
-    } catch (err) {
-        //do nothing, no value exists
+    v.section = 'quickNotifications notifyData';
+    var msg = f.get('threads/' + message.threadID + '/quickNotifications/' + message.senderID);
+    if (msg) {
+        api.sendMessage(msg, message.threadID);
+        f.setDataSimple2('threads/' + message.threadID + '/quickNotifications/' + message.senderID, null, null);
     }
 }
 
 function addnotifyData(api, message, input) {
+    v.section = 'quickNotifications addnotifyData';
     if (input.slice(0, 1) != '@') return;
     var fullText = input.slice(1);
     var i = fullText.indexOf(":");
@@ -74,17 +69,13 @@ function addnotifyData(api, message, input) {
                                 log.info('ignore id for own bot');
                             } else {
                                 log.info("correct id is " + id);
-                                try {
-                                    if (v.sBase.notificationMessages[message.threadID][id]) {
-                                        text = v.sBase.notificationMessages[message.threadID][id] + '\n' + fullText;
-                                    } else {
-                                        text = intro + fullText;
-                                    }
-                                } catch (err) {
+                                var prev = f.get('threads/' + message.threadID + '/quickNotifications/' + id);
+                                if (prev) {
+                                    text = prev + '\n' + fullText;
+                                } else {
                                     text = intro + fullText;
-                                } finally {
-                                    f.setData(api, message, v.f.Notifications.child(message.threadID).child(id), text, 'Notification saved for ' + ret[id].name + ':\n' + fullText);
                                 }
+                                f.setData2(api, message, 'threads/' + message.threadID + '/quickNotifications/' + id, text, 'Notification saved for ' + ret[id].name + ':\n' + fullText);
                             }
                         }
                     }
@@ -105,17 +96,13 @@ function addnotifyData(api, message, input) {
                                 log.info('ignore id for own bot');
                             } else {
                                 log.info("correct id is " + id);
-                                try {
-                                    if (v.sBase.notificationMessages[message.threadID][id]) {
-                                        text = v.sBase.notificationMessages[message.threadID][id] + '\n' + fullText;
-                                    } else {
-                                        text = intro + fullText;
-                                    }
-                                } catch (err) {
+                                var prev = f.get('threads/' + message.threadID + '/quickNotifications/' + id);
+                                if (prev) {
+                                    text = prev + '\n' + fullText;
+                                } else {
                                     text = intro + fullText;
-                                } finally {
-                                    f.setData(api, message, v.f.Notifications.child(message.threadID).child(id), text, 'Notification saved for ' + ret[id].name + ':\n' + fullText);
                                 }
+                                f.setData2(api, message, 'threads/' + message.threadID + '/quickNotifications/' + id, text, 'Notification saved for ' + ret[id].name + ':\n' + fullText);
                             }
                         }
                     }

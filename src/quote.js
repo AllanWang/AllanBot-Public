@@ -5,6 +5,7 @@ var moment = require('moment-timezone');
 var count = 0;
 
 function listener(api, message, input) {
+    v.section = 'quote listener';
     if (input.slice(0, 11) == '--find all ') {
         v.continue = false;
         api.getThreadInfo(message.threadID, function callback(error, info) {
@@ -21,6 +22,7 @@ function listener(api, message, input) {
 }
 
 function countFunction(api, message) {
+    v.section = 'quote countFunction';
     v.continue = false;
     api.getThreadInfo(message.threadID, function callback(error, info) {
         if (error) return log.error('Count error', error);
@@ -29,35 +31,32 @@ function countFunction(api, message) {
 }
 
 function print(api, message, all) {
+    v.section = 'quote print';
     v.continue = false;
-    try {
-        if (v.sBase.quotes[message.threadID]) {
-            var s = 'Quotes:';
-            for (var c in v.sBase.quotes[message.threadID]) {
-                if (!all) {
-                    if (c.split('_')[1] != message.senderID) continue;
-                }
-                s += '\n\n' + v.sBase.quotes[message.threadID][c];
+    var quotes = f.get('threads/' + message.threadID + '/quotes');
+    if (quotes) {
+        var s = 'Quotes:';
+        for (var c in quotes) {
+            if (!all) {
+                if (c.split('_')[1] != message.senderID) continue;
             }
-            api.sendMessage(s, message.threadID);
-        } else {
-            api.sendMessage('No quotes found', message.threadID);
+            s += '\n\n' + quotes[c];
         }
-    } catch (err) {
+        api.sendMessage(s, message.threadID);
+    } else {
         api.sendMessage('No quotes found', message.threadID);
     }
 }
 
 function create(api, message, input, i, save) {
+    v.section = 'quote create';
     input = input.trim().toLowerCase();
     v.continue = false;
     if (input.length == 0) return;
     count = 0;
     log.info('finding', input, '...');
     setTimeout(function() {
-        if (count == 0) {
-            api.sendMessage('Still looking for ' + input + '...', message.threadID);
-        }
+        if (count == 0) api.sendMessage('Still looking for ' + input + '...', message.threadID);
     }, 5000);
     api.getThreadHistory(message.threadID, 1, i, null, function callback(error, history) {
         if (error) return log.error('Error in getting quote', error);
@@ -88,11 +87,12 @@ function create(api, message, input, i, save) {
 }
 
 function output(api, message, text, save) {
+    v.section = 'quote output';
     var tag = '-' + text.senderName + ' ' + moment(text.timestamp).format('MM/DD/YYYY');
     var s = text.body;
     if (!v.contains(text.body, tag)) s += '\n' + tag;
     api.sendMessage(s, message.threadID);
-    if (save) f.setDataSimple(v.f.Quote.child(message.threadID).child(Date.now() + '_' + message.senderID), s, null);
+    if (save) f.setDataSimple2('threads/' + message.threadID + '/quotes/' + Date.now() + '_' + message.senderID, s, null);
 }
 
 module.exports = {

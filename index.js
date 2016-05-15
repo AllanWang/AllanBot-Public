@@ -164,98 +164,104 @@ function listen(message) {
         return;
     }
 
-    v.continue = true;
+    try {
 
-    v.godMode = v.contains(masterArray, message.senderID);
-    if (v.godMode) {
-        log.info('user has godMode');
-    }
-    v.devMode = v.contains(devArray, message.senderID) || v.godMode;
-    if (v.devMode && !v.godMode) {
-        log.info('user has devMode');
-    }
+        v.continue = true;
 
-    //continue independent isteners go here
-
-    if (v.b.superuser) ab.superuser.commands(api, message);
-
-    if (message.senderID == v.botID) return; //stop listening to bot
-
-    if (v.b.quickNotifications) ab.quickNotifications.notifyData(api, message); //sends notification if it exists
-
-    if (v.b.notifyMention) ab.basic.notifyMention(api, message); //notifies main user on mention
-
-    if (v.b.indirect) {
-        ab.indirect.messageInWaiting(api, message);
-        ab.indirect.saveConversationList(api, message);
-    }
-
-    //input independent listeners
-
-    if (v.continue && v.b.chatColour) ab.chatColour.listener(api, message);
-    if (v.continue && v.b.help) ab.help.specific(api, message);
-
-    if (!v.continue) return; //done going through first group of listeners
-
-    if (message.threadID == v.myID) {
-        if (v.b.indirect) {
-            ab.indirect.distantMessages(api, message);
-            if (message.body == '--map') return ab.indirect.printConvoMap(api);
+        v.godMode = v.contains(masterArray, message.senderID);
+        if (v.godMode) {
+            log.info('user has godMode');
         }
-    }
+        v.devMode = v.contains(devArray, message.senderID) || v.godMode;
+        if (v.devMode && !v.godMode) {
+            log.info('user has devMode');
+        }
 
-    //input checker
-    var input = '';
+        //continue independent isteners go here
 
-    if ((message.body.toLowerCase().slice(0, v.botNameLength + 2) == '@' + v.botNameL + ' ') && message.body.length > (v.botNameLength + 2)) {
-        input = message.body.slice(v.botNameLength + 2);
-    } else if (!v.contains(v.ignoreArray, message.threadID) && !message.isGroup) { //make sure it isn't a one on one convo with a bot
-        input = message.body;
-    }
+        if (v.b.superuser) ab.superuser.commands(api, message);
 
-    //godMode stuff
+        if (message.senderID == v.botID) return; //stop listening to bot
 
-    if (v.godMode) {
-        if (v.continue && v.b.onOff) ab.onOff.listener(api, message, message.body);
-        if (v.continue && v.b.endlessTalk) ab.endlessTalk.listener(api, message, message.body);
-        if (v.continue) ab.basic.muteToggle(api, message);
+        if (v.b.quickNotifications) ab.quickNotifications.notifyData(api, message); //sends notification if it exists
+
+        if (v.b.notifyMention) ab.basic.notifyMention(api, message); //notifies main user on mention
+
+        if (v.b.indirect) {
+            ab.indirect.messageInWaiting(api, message);
+            ab.indirect.saveConversationList(api, message);
+        }
+
+        //input independent listeners
+
+        if (v.continue && v.b.chatColour) ab.chatColour.listener(api, message);
+        if (v.continue && v.b.help) ab.help.specific(api, message);
+
+        if (!v.continue) return; //done going through first group of listeners
+
+        if (message.threadID == v.myID) {
+            if (v.b.indirect) {
+                ab.indirect.distantMessages(api, message);
+                if (message.body == '--map') return ab.indirect.printConvoMap(api);
+            }
+        }
+
+        //input checker
+        var input = '';
+
+        if ((message.body.toLowerCase().slice(0, v.botNameLength + 2) == '@' + v.botNameL + ' ') && message.body.length > (v.botNameLength + 2)) {
+            input = message.body.slice(v.botNameLength + 2);
+        } else if (!v.contains(v.ignoreArray, message.threadID) && !message.isGroup) { //make sure it isn't a one on one convo with a bot
+            input = message.body;
+        }
+
+        //godMode stuff
+
+        if (v.godMode) {
+            if (v.continue && v.b.onOff) ab.onOff.listener(api, message, message.body);
+            if (v.continue && v.b.endlessTalk) ab.endlessTalk.listener(api, message, message.body);
+            if (v.continue) ab.basic.muteToggle(api, message);
+
+            if (!v.continue) return;
+        }
+
+        //global stuff
+
+        // if (v.godMode) log.info('checking input');
+
+        //check if disabled after master functions and listeners run
+        if (v.b.onOff) ab.onOff.check(api, message);
+
+        if (v.b.endlessTalk) ab.endlessTalk.inAction(api, message); //should be disabled if offline
+
+        if (v.b.mcgill) ab.mcgill.listener(api, message, message.body);
 
         if (!v.continue) return;
-    }
+        //Input stuff goes here
+        if (input) {
+            log.info('Input', input);
 
-    //global stuff
+            if (v.continue) ab.basic.respondSwitch(api, message, input);
+            if (v.continue && v.b.chatColour) ab.chatColour.change(api, message, input);
+            if (v.continue && v.b.chatEmoji) ab.chatEmoji.listener(api, message, input);
+            if (v.continue && v.b.chatTitle) ab.chatTitle.listener(api, message, input);
+            if (v.continue && v.b.echo) ab.echo.listener(api, message, input);
+            if (v.continue && v.b.endlessTalk) ab.endlessTalk.listener(api, message, input);
+            if (v.continue && v.b.help) ab.help.listener(api, message, input);
+            if (v.continue && v.b.nickname) ab.nickname.listener(api, message, input);
+            if (v.continue && v.b.quickNotifications) ab.quickNotifications.listener(api, message, input);
+            if (v.continue && v.b.quote) ab.quote.listener(api, message, input);
+            if (v.continue && v.b.remind) ab.remind.listener(api, message, input);
+            if (v.continue && v.b.saveText) ab.saveText.listener(api, message, input);
+            if (v.continue && v.b.spam) ab.spam.listener(api, message, input);
+            if (v.continue && v.b.translate) ab.translate.listener(api, message, input);
 
-    // if (v.godMode) log.info('checking input');
-
-    //check if disabled after master functions and listeners run
-    if (v.b.onOff) ab.onOff.check(api, message);
-
-    if (v.b.endlessTalk) ab.endlessTalk.inAction(api, message); //should be disabled if offline
-
-    if (v.b.mcgill) ab.mcgill.listener(api, message, message.body);
-
-    if (!v.continue) return;
-    //Input stuff goes here
-    if (input) {
-        log.info('Input', input);
-
-        if (v.continue) ab.basic.respondSwitch(api, message, input);
-        if (v.continue && v.b.chatColour) ab.chatColour.change(api, message, input);
-        if (v.continue && v.b.chatEmoji) ab.chatEmoji.listener(api, message, input);
-        if (v.continue && v.b.chatTitle) ab.chatTitle.listener(api, message, input);
-        if (v.continue && v.b.echo) ab.echo.listener(api, message, input);
-        if (v.continue && v.b.endlessTalk) ab.endlessTalk.listener(api, message, input);
-        if (v.continue && v.b.help) ab.help.listener(api, message, input);
-        if (v.continue && v.b.nickname) ab.nickname.listener(api, message, input);
-        if (v.continue && v.b.quickNotifications) ab.quickNotifications.listener(api, message, input);
-        if (v.continue && v.b.quote) ab.quote.listener(api, message, input);
-        if (v.continue && v.b.remind) ab.remind.listener(api, message, input);
-        if (v.continue && v.b.saveText) ab.saveText.listener(api, message, input);
-        if (v.continue && v.b.spam) ab.spam.listener(api, message, input);
-        if (v.continue && v.b.translate) ab.translate.listener(api, message, input);
-
-        //response listener must be last
-        if (v.continue && v.b.talkBack) ab.basic.respondRequest(api, message, input);
+            //response listener must be last
+            if (v.continue && v.b.talkBack) ab.basic.respondRequest(api, message, input);
+        }
+    } catch (error) {
+        log.error(error);
+        if (v.b.errorNotifications) api.sendMessage(v.botName + ' error: ' + v.section, v.myID);
     }
 }
 

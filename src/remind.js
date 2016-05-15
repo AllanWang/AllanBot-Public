@@ -7,6 +7,7 @@ var scheduledMessageTime = 0;
 var scheduledMessageKey = 'key';
 
 function listener(api, message, input) {
+    v.section = 'remind listener';
     if (input.slice(0, 4) == 'UTC ') {
         setTimezone(api, message, input.slice(4));
     } else if (input.slice(0, 7).toLowerCase() == 'remind ') {
@@ -16,6 +17,7 @@ function listener(api, message, input) {
 }
 
 function setTimezone(api, message, input) {
+    v.section = 'remind setTimezone';
     v.continue = false;
     var offset = parseInt(input);
     if (isNaN(offset)) {
@@ -24,26 +26,18 @@ function setTimezone(api, message, input) {
         if (Math.abs(offset) < 60) {
             offset *= 60;
         }
-        f.setData(api, message, v.f.TimeZone.child(message.senderID), offset, 'Timezone saved! \nYour current time is: ' + moment(Date.now()).utcOffset(offset).format('YYYY-MM-DD HH:mm:ss') + '\n(If this is wrong, you can set it again.)');
+        f.setData2(api, message, 'users/' + message.senderID + '/UTC', offset, 'Timezone saved! \nYour current time is: ' + moment(Date.now()).utcOffset(offset).format('YYYY-MM-DD HH:mm:ss') + '\n(If this is wrong, you can set it again.)');
     }
 }
 
 function createTimeNotification(api, message, content) {
+    v.section = 'remind createTimeNotification';
     if (!v.contains(content, '@') || !v.contains(content, ':')) return;
     log.info('creating time notif');
     v.continue = false;
-    var offset = 0;
-    try {
-        if (v.sBase.timezone_offset[message.senderID]) {
-            offset = v.sBase.timezone_offset[message.senderID];
-        } else {
-            api.sendMessage("I don't know what timezone you are in. Please tell me your time offset in the format UTC [offset] and then resend your reminder request.\n(EST is 'UTC -5'; PST is 'UTC -8')", message.threadID);
-            return;
-        }
-    } catch (err) {
-        api.sendMessage("I don't know what timezone you are in. Please tell me your time offset in the format UTC [offset] and then resend your reminder request.\n(EST is 'UTC -5'; PST is 'UTC -8')", message.threadID);
-        return;
-    }
+    var offset = f.get('users/' + message.senderID + '/UTC');
+    if (!offset) return api.sendMessage("I don't know what timezone you are in. Please tell me your time offset in the format UTC [offset] and then resend your reminder request.\n(EST is 'UTC -5'; PST is 'UTC -8')", message.threadID);
+
     var anonymous = false;
     var at = content.indexOf('@');
 
@@ -66,6 +60,7 @@ function createTimeNotification(api, message, content) {
 }
 
 function createTimeNotification2(api, message, content, offset, threadID, name) {
+    v.section = 'remind createTimeNotification2';
     var colon = content.indexOf(':');
     var j = colon + 5
     if (colon == -1) {
@@ -143,35 +138,32 @@ function createTimeNotification2(api, message, content, offset, threadID, name) 
     var key = time.format('x') + '_' + threadID;
 
     while (invalid) { //make sure the key does not exist already
-        try {
-            if (v.sBase.timezone_offset[key]) {
-                time.add(1, 'ms');
-                key = time.format('x') + '_' + threadID;
-            } else {
-                invalid = false;
-            }
-        } catch (err) {
+        if (f.get('reminders/' + key)) {
+            time.add(1, 'ms');
+            key = time.format('x') + '_' + threadID;
+        } else {
             invalid = false;
         }
     }
 
-    f.setData(api, message, v.f.SM.child(time.format('x') + '_' + threadID), reminder, 'Reminder set for ' + timeFormat + '\nTime difference: ' + moment(time).fromNow(true) + '\n' + content);
+    f.setData2(api, message, 'reminders/' + key, reminder, 'Reminder set for ' + timeFormat + '\nTime difference: ' + moment(time).fromNow(true) + '\n' + content);
     setTimeout(function() {
         getScheduledMessages();
     }, 5000);
 }
 
 function checkTimeNotification(api) {
+    v.section = 'remind checkTimeNotification';
     if (scheduledMessageTime == 0) return;
     if (scheduledMessageTime < Date.now()) {
-        var thread = scheduledMessageKey.slice(scheduledMessageKey.indexOf('_') + 1);
-        api.sendMessage(v.sBase.scheduled_messages[scheduledMessageKey], thread, function callback(err) {
+        var thread = scheduledMessageKey.split('_')[1];
+        api.sendMessage(f.get('reminders/' + scheduledMessageKey), thread, function callback(err) {
             if (err) {
                 //getScheduledMessages takes time
                 return;
             }
         });
-        f.setDataSimple(v.f.SM.child(scheduledMessageKey), null, null);
+        f.setDataSimple2('reminders/' + scheduledMessageKey, null, null);
     }
     getScheduledMessages();
     setTimeout(function() {
@@ -180,31 +172,25 @@ function checkTimeNotification(api) {
 }
 
 function getScheduledMessages() {
+    v.section = 'remind getScheduledMessages';
     scheduledMessageTime = 0;
-    try {
-        if (v.sBase.scheduled_messages) {
-            for (var s in v.sBase.scheduled_messages) {
-                var time = s.slice(0, s.indexOf('_'));
-                if (scheduledMessageTime == 0) {
-                    scheduledMessageKey = s;
-                    scheduledMessageTime = parseInt(time);
-                }
-                if (time < scheduledMessageTime) {
-                    scheduledMessageKey = s;
-                    scheduledMessageTime = parseInt(time);
-                }
+    var msgs = f.get('reminders');
+    if (msgs) {
+        for (var s in msgs) {
+            var time = s.split('_')[0];
+            if (time < scheduledMessageTime || scheduledMessageTime == 0) {
+                scheduledMessageKey = s;
+                scheduledMessageTime = parseInt(time);
             }
-            if (v.nextScheduledMessageNotif) {
-                log.info('next scheduled message at ' + scheduledMessageTime + '   ' + moment(parseInt(scheduledMessageTime)).format('YYYY-MM-DD HH:mm:ss'));
-                log.info('current time is ' + Date.now() + '             ' + moment().format('YYYY-MM-DD HH:mm:ss'));
-                log.info('time remaining ' + moment(scheduledMessageTime).fromNow(true));
-                v.nextScheduledMessageNotif = false;
-            }
-        } else {
-            log.info('nothing in getScheduledMessages');
         }
-    } catch (err) {
-        log.info('getScheduledMessages error\n\n' + err);
+        if (v.nextScheduledMessageNotif) {
+            log.info('next scheduled message at ' + scheduledMessageTime + '   ' + moment(parseInt(scheduledMessageTime)).format('YYYY-MM-DD HH:mm:ss'));
+            log.info('current time is ' + Date.now() + '             ' + moment().format('YYYY-MM-DD HH:mm:ss'));
+            log.info('time remaining ' + moment(scheduledMessageTime).fromNow(true));
+            v.nextScheduledMessageNotif = false;
+        }
+    } else {
+        log.info('nothing in getScheduledMessages');
     }
 }
 

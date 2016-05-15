@@ -3,6 +3,7 @@ var v = require('./globalVariables');
 var u = require('./userTimeout');
 
 function commands(api, message) {
+    v.section = 'superuser commands';
     if (message.body.slice(0, 1) != '$') return;
     if (message.senderID != v.botID) return;
     log.info('super user command enabled');

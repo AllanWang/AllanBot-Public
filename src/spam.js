@@ -1,6 +1,7 @@
 var v = require('./globalVariables');
 
 function listener(api, message, input) {
+    v.section = 'spam listener';
     if (input != '--spam') return;
     v.continue = false;
     if (v.devMode) {
@@ -11,6 +12,7 @@ function listener(api, message, input) {
 }
 
 function spam(api, message) {
+    v.section = 'spam spam';
     v.continue = false;
     for (var i = 0; i < 25; i++) {
         setTimeout(function() {
