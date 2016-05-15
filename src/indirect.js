@@ -8,7 +8,7 @@ function messageInWaiting(api, message) {
     var msg = f.get('threads/' + message.threadID + '/messages_in_waiting');
     if (msg) {
         api.sendMessage(msg, message.threadID);
-        f.setDataSimple2('threads/' + message.threadID + '/messages_in_waiting', null, null);
+        f.setDataSimple('threads/' + message.threadID + '/messages_in_waiting', null, null);
     }
 }
 
@@ -46,6 +46,7 @@ function printConvoMap(api) {
     for (var c in map) {
         s += '\n' + c + ': ' + map[c].name;
     }
+    api.sendMessage(s, v.myID);
 }
 
 function saveConversationList(api, message) {

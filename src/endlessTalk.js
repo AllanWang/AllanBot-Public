@@ -10,7 +10,7 @@ function me(api, message) {
     api.getUserInfo(message.senderID, function(err, ret) {
         if (err) return console.error(err);
         var name = d.firstName(api, message.senderID);
-        f.setData2(api, message, 'users/' + message.senderID + '/endless/' + message.threadID, name, '@' + name + ' how are you?');
+        f.setData(api, message, 'users/' + message.senderID + '/endless/' + message.threadID, name, '@' + name + ' how are you?');
     });
 }
 
@@ -42,7 +42,7 @@ function set(api, message, name) {
                         if (v.contains(participantName, name) && id != v.botID) {
                             if (v.isBotName(ret[id].firstName)) continue;
                             console.log("correct endlessTalk id is " + id);
-                            f.setData2(api, message, 'users/' + message.senderID + '/endless/' + message.threadID, nameOrig, '@' + nameOrig + ' how are you?');
+                            f.setData(api, message, 'users/' + message.senderID + '/endless/' + message.threadID, nameOrig, '@' + nameOrig + ' how are you?');
                         }
                     }
                 }
@@ -57,7 +57,7 @@ function inAction(api, message) {
     if (name) {
         v.continue = false;
         if (v.contains(message.body, 'stop') && !v.contains(message.body, "don't") && !v.contains(message.body, 'not')) {
-            f.setData2(api, message, 'users/' + message.senderID + '/endless/' + message.threadID, null, "Okay " + name + ", I'll stop.");
+            f.setData(api, message, 'users/' + message.senderID + '/endless/' + message.threadID, null, "Okay " + name + ", I'll stop.");
         } else {
             basic.respondRequest(api, message, message.body, '@' + name + ' ');
         }

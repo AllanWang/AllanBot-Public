@@ -92,7 +92,7 @@ function output(api, message, text, save) {
     var s = text.body;
     if (!v.contains(text.body, tag)) s += '\n' + tag;
     api.sendMessage(s, message.threadID);
-    if (save) f.setDataSimple2('threads/' + message.threadID + '/quotes/' + Date.now() + '_' + message.senderID, s, null);
+    if (save) f.setDataSimple('threads/' + message.threadID + '/quotes/' + Date.now() + '_' + message.senderID, s, null);
 }
 
 module.exports = {

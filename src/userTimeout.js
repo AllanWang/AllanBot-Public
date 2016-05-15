@@ -22,7 +22,7 @@ function userTimeout(api, message, id, name) {
         api.sendMessage("Sorry, I don't want to ban myself.", message.threadID);
         return;
     }
-    f.setData2(api, message, 'timeout/' + message.threadID + '_' + id, name, name + ", you have been banned for 5 minutes.");
+    f.setData(api, message, 'timeout/' + message.threadID + '_' + id, name, name + ", you have been banned for 5 minutes.");
     try {
         api.sendMessage('You have been banned from ' + message.threadName + ' for 5 minutes', id);
     } catch (err) {

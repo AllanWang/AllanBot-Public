@@ -14,7 +14,7 @@ function listener(api, message, input) {
         get(api, message);
     } else if (input == '--erase') {
         v.continue = false;
-        f.setData2(api, message, 'threads/' + message.threadID + '/savedText/' + message.senderID, null, 'Erased saved text');
+        f.setData(api, message, 'threads/' + message.threadID + '/savedText/' + message.senderID, null, 'Erased saved text');
     }
 }
 
@@ -24,7 +24,7 @@ function save(api, message, input) {
     input = moment.utc().format('MM/DD/YYYY') + ": " + input;
     var prev = f.get('threads/' + message.threadID + '/savedText/' + message.senderID);
     if (prev) input = prev + '\n' + input;
-    f.setData2(api, message, 'threads/' + message.threadID + '/savedText/' + message.senderID, input, 'Saved text:\n\n' + input);
+    f.setData(api, message, 'threads/' + message.threadID + '/savedText/' + message.senderID, input, 'Saved text:\n\n' + input);
 }
 
 function get(api, message) {

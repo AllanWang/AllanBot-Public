@@ -7,7 +7,7 @@ function listener(api, message, input) {
     if (!v.contains(input, '@' + v.botNameL)) return;
     if (v.contains(input, '--online')) {
         v.continue = false;
-        f.setData2(api, message, 'offline', null, v.botName + ' is now online');
+        f.setData(api, message, 'offline', null, v.botName + ' is now online');
         if (message.senderID != v.myID) {
             api.getUserInfo(message.senderID, function(err, ret) {
                 if (err) return console.error(err);
@@ -16,9 +16,9 @@ function listener(api, message, input) {
         }
     } else if (v.contains(input, '--offline')) {
         v.continue = false;
-        f.setData2(api, message, 'offline', true, v.botName + ' is now offline');
+        f.setData(api, message, 'offline', true, v.botName + ' is now offline');
         setTimeout(function() {
-            f.setData2(api, message, 'offline', null, v.botName + ' is online again');
+            f.setData(api, message, 'offline', null, v.botName + ' is online again');
         }, 3600000);
     }
 }

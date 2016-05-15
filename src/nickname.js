@@ -22,7 +22,7 @@ function changeNickname(api, message, t) {
             for (var n in nicknames) {
                 api.changeNickname(nicknames[n], message.threadID, n, function callback(err) {
                     if (err) {
-                        f.setDataSimple2('threads/' + message.threadID + '/nicknames/' + message.senderID, null, null);
+                        f.setDataSimple('threads/' + message.threadID + '/nicknames/' + message.senderID, null, null);
                         log.error('changeNickname failed for ', n, 'removed nickname');
                     }
                 });
@@ -36,7 +36,7 @@ function changeNickname(api, message, t) {
             // log.info('info nick ' + info.nicknames.toString());
             for (var id in info.nicknames) {
                 // console.log('id ' + id);
-                f.setDataSimple2('threads/' + message.threadID + '/nicknames/' + id, info.nicknames[id], null);
+                f.setDataSimple('threads/' + message.threadID + '/nicknames/' + id, info.nicknames[id], null);
                 api.changeNickname('', message.threadID, id, function callback(err) {
                     if (err) return log.error(err);
                 });

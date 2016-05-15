@@ -36,30 +36,7 @@ function setBase(f) {
     });
 }
 
-function setDataSimple(fLocation, input, success) {
-    log.info('starting setData');
-    fLocation.set(input,
-        function(error) {
-            if (error) {
-                log.error("Data could not be saved");
-            } else if (success != null) {
-                log.info(success);
-            }
-        });
-}
-
-function setData(api, message, fLocation, input, success) {
-    fLocation.set(input,
-        function(error) {
-            if (error) {
-                api.sendMessage("Data could not be saved", message.threadID);
-            } else if (success != null) {
-                api.sendMessage(success, message.threadID);
-            }
-        });
-}
-
-function setData2(api, message, location, input, success) {
+function setData(api, message, location, input, success) {
     if (input == get(location)) {
         if (success) api.sendMessage('Data has not changed from previously saved input.', message.threadID);
         return;
@@ -79,7 +56,7 @@ function setData2(api, message, location, input, success) {
         });
 }
 
-function setDataSimple2(location, input, success) {
+function setDataSimple(location, input, success) {
     if (input == get(location)) return;
     var fLocation = fBase;
     var segments = location.split('/');

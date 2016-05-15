@@ -26,7 +26,7 @@ function setTimezone(api, message, input) {
         if (Math.abs(offset) < 60) {
             offset *= 60;
         }
-        f.setData2(api, message, 'users/' + message.senderID + '/UTC', offset, 'Timezone saved! \nYour current time is: ' + moment(Date.now()).utcOffset(offset).format('YYYY-MM-DD HH:mm:ss') + '\n(If this is wrong, you can set it again.)');
+        f.setData(api, message, 'users/' + message.senderID + '/UTC', offset, 'Timezone saved! \nYour current time is: ' + moment(Date.now()).utcOffset(offset).format('YYYY-MM-DD HH:mm:ss') + '\n(If this is wrong, you can set it again.)');
     }
 }
 
@@ -146,7 +146,7 @@ function createTimeNotification2(api, message, content, offset, threadID, name) 
         }
     }
 
-    f.setData2(api, message, 'reminders/' + key, reminder, 'Reminder set for ' + timeFormat + '\nTime difference: ' + moment(time).fromNow(true) + '\n' + content);
+    f.setData(api, message, 'reminders/' + key, reminder, 'Reminder set for ' + timeFormat + '\nTime difference: ' + moment(time).fromNow(true) + '\n' + content);
     setTimeout(function() {
         getScheduledMessages();
     }, 5000);
@@ -163,7 +163,7 @@ function checkTimeNotification(api) {
                 return;
             }
         });
-        f.setDataSimple2('reminders/' + scheduledMessageKey, null, null);
+        f.setDataSimple('reminders/' + scheduledMessageKey, null, null);
     }
     getScheduledMessages();
     setTimeout(function() {

@@ -45,7 +45,7 @@ function listener(api, message) {
     v.continue = false;
     var c = '#' + message.body.split('#')[1];
     if (/^#[0-9A-F]{6}$/i.test(c)) {
-        f.setData2(api, message, 'threads/' + message.threadID + '/colors/' + colorSuggestionName, c, 'Suggestion saved; thanks!');
+        f.setData(api, message, 'threads/' + message.threadID + '/colors/' + colorSuggestionName, c, 'Suggestion saved; thanks!');
         change(api, message, c);
     } else {
         api.sendMessage("That isn't a valid hex color.", message.threadID);

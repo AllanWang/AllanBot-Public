@@ -29,8 +29,10 @@ function thread(api, threadID) {
         // if (error) return v.error(api, 'Thread data collection', error);
         if (error) return log.warn(threadID, 'thread could not be extracted'); //TODO figure out how to remove the errors here
         // log.info('name', info.name);
-        if (!f.get('threads/' + threadID + '/name')) api.sendMessage('New conversation found: ' + info.name + '\n' + threadID, v.myID);
-        f.setDataSimple2('threads/' + threadID + '/name', info.name, null);
+        var name = info.name;
+        if (!name || name.trim().length == 0) name = 'undefined';
+        if (!f.get('threads/' + threadID + '/name')) api.sendMessage('New conversation found: ' + name + '\n' + threadID, v.myID);
+        f.setDataSimple('threads/' + threadID + '/name', name, null);
     });
 }
 
@@ -41,8 +43,8 @@ function user(api, userID) {
         // log.warn(JSON.stringify(obj));
         for (var user in obj) {
             var fLocation = 'users/' + user + '/'; //as a base, extra child will be added later
-            f.setDataSimple2(fLocation + 'name', obj[user].name, null);
-            f.setDataSimple2(fLocation + 'firstName', obj[user].firstName, null);
+            f.setDataSimple(fLocation + 'name', obj[user].name, null);
+            f.setDataSimple(fLocation + 'firstName', obj[user].firstName, null);
         }
     });
 }
@@ -54,7 +56,7 @@ function firstName(api, userID) {
     log.info('Retrieving first name via api');
     api.getUserInfo(userID, function callback(err, obj) {
         if (err) return log.error(err);
-        f.setDataSimple2('users/' + userID + '/firstName', obj[user].firstName, null);
+        f.setDataSimple('users/' + userID + '/firstName', obj[user].firstName, null);
         return obj[userID].firstName;
     });
 }
@@ -66,7 +68,7 @@ function fullName(api, userID) {
     log.info('Retrieving full name via api');
     api.getUserInfo(userID, function callback(err, obj) {
         if (err) return log.error(err);
-        f.setDataSimple2('users/' + userID + '/name', obj[user].name, null);
+        f.setDataSimple('users/' + userID + '/name', obj[user].name, null);
         return obj[userID].name;
     });
 }
