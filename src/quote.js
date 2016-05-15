@@ -71,7 +71,8 @@ function create(api, message, input, i, save) {
                 output(api, message, history[j], save);
                 count++;
                 if (save) return;
-                if (count >= 5) return;
+                if (count >= 5 && i == 1000) return;
+                if (count >= 20) return; //add more if find all is used
             }
         }
         // if (i > 100) return;
