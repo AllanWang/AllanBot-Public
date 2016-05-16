@@ -34,6 +34,7 @@ module.exports = {
     firebaseOn: false,
     continue: true,
     section: null,
+    lastMentionThreadID: null,
     pandoraEnabled: false,
     mitsukuMode: true,
     isMuted: false,

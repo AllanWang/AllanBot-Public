@@ -79,7 +79,7 @@ function setOptions(options) {
                 break;
         }
     });
-    if (!api) log.warn('API not received; nothing will work.');
+    if (!api) return log.warn('API not received; nothing will work.');
     v.botID = parseInt(api.getCurrentUserID());
     if (!v.botName) {
         api.getUserInfo(v.botID, function(err, ret) {
@@ -90,7 +90,11 @@ function setOptions(options) {
             }
         });
     }
-    if (!v.myID) log.warn('ID not set; a few things won\'t work.');
+    if (!v.myID) {
+        log.warn('ID not set; a few things won\'t work.');
+    } else if (!v.myName) {
+        ab.dataCollection.firstName(api, v.myID);
+    }
     if (!v.contains(v.ignoreArray, v.botID)) v.ignoreArray.unshift(v.botID);
     if (!v.firebaseOn) log.warn('Firebase is not set; nothing will work');
     log.info('--------------------\n     Welcome ' + v.botName + '\n     --------------------');
@@ -199,12 +203,7 @@ function listen(message) {
 
         if (!v.continue) return; //done going through first group of listeners
 
-        if (message.threadID == v.myID) {
-            if (v.b.indirect) {
-                ab.indirect.distantMessages(api, message);
-                if (message.body == '--map') return ab.indirect.printConvoMap(api);
-            }
-        }
+        if (v.continue && v.b.indirect) ab.indirect.listener(api, message, message.body);
 
         if (v.continue) ab.dataCollection.collect(api, message, message.body);
 

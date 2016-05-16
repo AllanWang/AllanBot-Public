@@ -4,21 +4,24 @@ var pandoraID;
 var m = require('mitsuku-api')();
 var log = require("npmlog");
 var v = require('./globalVariables');
+var d = require('./dataCollection');
 
 function notifyMention(api, message) {
-    if (!v.myName) {
-        log.warn('Name not set; check "myName"');
-        return;
-    }
     if (v.contains(message.body, v.myName) && !v.contains(message.body, v.botName) && !v.contains(message.body, "@" + v.myName) && !v.godMode &&
         !v.contains(v.ignoreArray, message.senderID)) {
-        api.getUserInfo(message.senderID, function(err, ret) {
-            if (err) return console.error(err);
-            api.getThreadInfo(message.threadID, function callback(err, info) {
-                if (err) return console.error(err);
-                api.sendMessage('From ' + ret[message.senderID].name + ' in ' + info.name + ':\n\n' + message.body, v.myID);
-            });
-        });
+
+        v.lastMentionThreadID = message.threadID;
+        api.sendMessage('From ' + d.fullName(api, message.senderID) + ' in ' + d.threadName(api, message.threadID) + ':\n\n' + message.body, v.myID);
+
+
+        // api.getUserInfo(message.senderID, function(err, ret) {
+        //     if (err) return console.error(err);
+        //     api.getThreadInfo(message.threadID, function callback(err, info) {
+        //         if (err) return console.error(err);
+        //         v.lastMentionThreadID = message.threadID;
+        //         api.sendMessage('From ' + ret[message.senderID].name + ' in ' + info.name + ':\n\n' + message.body, v.myID);
+        //     });
+        // });
     }
 }
 

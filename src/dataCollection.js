@@ -42,6 +42,22 @@ function user(api, userID) {
     });
 }
 
+function threadName(api, threadID) {
+    v.section = 'dataCollection threadName';
+    var name = f.get('threads/' + threadID + '/name');
+    if (name) return name;
+    api.getThreadInfo(threadID, function callback(error, info) {
+        if (error) {
+            log.warn(threadID, 'thread could not be extracted'); //TODO figure out how to remove the errors here
+            return 'error';
+        }
+        name = info.name;
+        if (!name || name.trim().length == 0) name = 'undefined';
+        f.setDataSimple('threads/' + threadID + '/name', name, null);
+        return name;
+    });
+}
+
 function firstName(api, userID) {
     v.section = 'dataCollection firstName';
     var name = f.get('users/' + userID + '/firstName');

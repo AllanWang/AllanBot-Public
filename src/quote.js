@@ -2,7 +2,6 @@ var log = require("npmlog");
 var v = require('./globalVariables');
 var f = require('./firebase');
 var moment = require('moment-timezone');
-var count = 0;
 
 function listener(api, message, input) {
     v.section = 'quote listener';
@@ -53,7 +52,7 @@ function create(api, message, input, i, save) {
     input = input.trim().toLowerCase();
     v.continue = false;
     if (input.length == 0) return;
-    count = 0;
+    var count = 0;
     log.info('finding', input, '...');
     setTimeout(function() {
         if (count == 0) api.sendMessage('Still looking for ' + input + '...', message.threadID);
