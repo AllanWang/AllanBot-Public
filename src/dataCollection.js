@@ -44,14 +44,14 @@ function user(api, userID) {
 
 function threadName(api, threadID, callback) {
     v.section = 'dataCollection threadName';
-    if(!callback) callback = function() {};
+    if (!callback) callback = function() {};
     var name = f.get('threads/' + threadID + '/name');
     if (name) return callback(name);
     api.getThreadInfo(threadID, function callback(error, info) {
         if (error) {
-        log.warn(threadID, 'thread could not be extracted'); //TODO figure out how to remove the errors here
-        callback('error');
-      }
+            log.warn(threadID, 'thread could not be extracted'); //TODO figure out how to remove the errors here
+            callback('error');
+        }
         name = info.name;
         if (!name || name.trim().length == 0) name = 'undefined';
         f.setDataSimple('threads/' + threadID + '/name', name, null);
