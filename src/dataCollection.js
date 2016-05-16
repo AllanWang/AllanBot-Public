@@ -64,7 +64,10 @@ function firstName(api, userID) {
     if (name) return name;
     log.info('Retrieving first name via api');
     api.getUserInfo(userID, function callback(err, obj) {
-        if (err) return log.error(err);
+        if (err) {
+            log.error(err);
+            return 'error';
+        }
         f.setDataSimple('users/' + userID + '/firstName', obj[user].firstName, null);
         return obj[userID].firstName;
     });
@@ -76,7 +79,10 @@ function fullName(api, userID) {
     if (name) return name;
     log.info('Retrieving full name via api');
     api.getUserInfo(userID, function callback(err, obj) {
-        if (err) return log.error(err);
+        if (err) {
+            log.error(err);
+            return 'error';
+        }
         f.setDataSimple('users/' + userID + '/name', obj[user].name, null);
         return obj[userID].name;
     });
