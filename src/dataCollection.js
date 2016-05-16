@@ -52,6 +52,7 @@ function threadName(api, threadID, callback) {
         name = info.name;
         if (!name || name.trim().length == 0) name = 'undefined';
         f.setDataSimple('threads/' + threadID + '/name', name, null);
+        callback(name);
         //return name here via callback
     });
     // return 'undefined';
