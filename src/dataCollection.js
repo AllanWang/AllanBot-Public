@@ -42,20 +42,39 @@ function user(api, userID) {
     });
 }
 
-function threadName(api, threadID) {
+function threadName(api, threadID, callback) {
     v.section = 'dataCollection threadName';
+    if(!callback) callback = function() {};
     var name = f.get('threads/' + threadID + '/name');
-    if (name) return name;
+    if (name) return callback(name);
     api.getThreadInfo(threadID, function callback(error, info) {
-        if (error) {
-            log.warn(threadID, 'thread could not be extracted'); //TODO figure out how to remove the errors here
-            return 'error';
-        }
+        if (error) return log.warn(threadID, 'thread could not be extracted'); //TODO figure out how to remove the errors here
         name = info.name;
         if (!name || name.trim().length == 0) name = 'undefined';
         f.setDataSimple('threads/' + threadID + '/name', name, null);
-        return name;
+        //return name here via callback
     });
+    // return 'undefined';
+}
+
+function request(fromLang, toLang, phrase, callback) {
+    v.section = 'translate request';
+    invalid = '';
+    fromLang = getLanKey(fromLang);
+    toLang = getLanKey(toLang);
+    if (invalid) {
+        callback(null, invalid + ' is not a valid language/key');
+        return;
+    }
+    // log.info('Translating', phrase, 'from', fromLang, 'to', toLang);
+    translate(fromLang, toLang, phrase)
+        .then(function(result) {
+            callback(null, result);
+        })
+        .catch(function(err) {
+            log.error('Translate error', err);
+            return callback(err);
+        })
 }
 
 function firstName(api, userID) {
@@ -64,13 +83,10 @@ function firstName(api, userID) {
     if (name) return name;
     log.info('Retrieving first name via api');
     api.getUserInfo(userID, function callback(err, obj) {
-        if (err) {
-            log.error(err);
-            return 'error';
-        }
+        if (err) return log.error(err);
         f.setDataSimple('users/' + userID + '/firstName', obj[user].firstName, null);
-        return obj[userID].firstName;
     });
+    return 'undefined';
 }
 
 function fullName(api, userID) {
