@@ -5,23 +5,6 @@ var v = require('./globalVariables');
 function initializeFirebase(f) {
     v.section = 'firebase initializeFirebase';
     fBase = f;
-    v.fBase = f;
-    v.f.Users = fBase.child('users');
-    v.f.Threads = fBase.child('threads');
-    fBoolean = fBase.child("boolean");
-    v.f.Offline = fBoolean.child("bot_offline");
-    v.f.QN = fBoolean.child("quick_notify");
-    v.f.Nick = fBase.child("nicknames");
-    v.f.Endless = fBoolean.child("endless_talk");
-    v.f.Saved = fBase.child("savedMessages");
-    v.f.Notifications = fBase.child("notificationMessages");
-    v.f.SM = fBase.child("scheduled_messages");
-    v.f.TimeZone = fBase.child("timezone_offset");
-    v.f.Conversations = fBase.child("conversations");
-    v.f.ColorSuggestions = fBase.child("colors_custom");
-    v.f.MIW = fBase.child("messages_in_waiting");
-    v.f.Timeout = fBoolean.child("timeout");
-    v.f.Quote = fBase.child("quotes");
     log.info('firebase loaded!');
     v.firebaseOn = true;
 }

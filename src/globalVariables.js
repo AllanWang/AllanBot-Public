@@ -2,27 +2,8 @@ var log = require("npmlog");
 
 var featureBooleans = {
     errorNotifications: false,
-    talkBack: false,
-    notifyMention: false
+    talkBack: false
 };
-
-var firebase = {
-    Users: null,
-    Threads: null,
-    Offline: null,
-    QN: null,
-    Nick: null,
-    Endless: null,
-    Saved: null,
-    Notifications: null,
-    SM: null,
-    TimeZone: null,
-    Conversations: null,
-    ColorSuggestions: null,
-    MIW: null,
-    Timeout: null,
-    Quote: null
-}
 
 module.exports = {
     botName: null,
@@ -34,7 +15,6 @@ module.exports = {
     firebaseOn: false,
     continue: true,
     section: null,
-    lastMentionThreadID: null,
     pandoraEnabled: false,
     mitsukuMode: true,
     isMuted: false,
@@ -46,7 +26,6 @@ module.exports = {
     sBase: null,
     fBase: null,
     b: featureBooleans,
-    f: firebase,
     contains: function(message, value) {
         return (message.toString().toLowerCase().indexOf(value.toString().toLowerCase()) != -1);
     },

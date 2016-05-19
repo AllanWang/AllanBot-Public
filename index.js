@@ -23,6 +23,7 @@ var ab = [
     'spam',
     'echo',
     'dataCollection',
+    'notifyMention',
     'mcgill' //test file
 ]
 
@@ -134,7 +135,7 @@ function enableFeatures(options) {
     if (firstRun) { ///first run, in case you use enableFeatures multiple times
         firstRun = false;
         if (v.b.notifyMention) {
-            if (!v.myID || !v.myName) {
+            if (!v.myID || !v.myName) { //TODO add get myName
                 log.warn('notifyMention disabled; make sure you have set your name and ID');
                 v.b.notifyMention = false;
             }
@@ -188,8 +189,6 @@ function listen(message) {
         if (message.senderID == v.botID) return; //stop listening to bot
 
         if (v.b.quickNotifications) ab.quickNotifications.notifyData(api, message); //sends notification if it exists
-
-        if (v.b.notifyMention) ab.basic.notifyMention(api, message); //notifies main user on mention
 
         if (v.b.indirect) {
             ab.indirect.messageInWaiting(api, message);

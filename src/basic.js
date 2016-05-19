@@ -6,25 +6,6 @@ var log = require("npmlog");
 var v = require('./globalVariables');
 var d = require('./dataCollection');
 
-function notifyMention(api, message) {
-    if (v.contains(message.body, v.myName) && !v.contains(message.body, v.botName) && !v.contains(message.body, "@" + v.myName) && !v.godMode &&
-        !v.contains(v.ignoreArray, message.senderID)) {
-
-        v.lastMentionThreadID = message.threadID;
-        api.sendMessage('From ' + d.fullName(api, message.senderID) + ' in ' + d.threadName(api, message.threadID) + ':\n\n' + message.body, v.myID);
-
-
-        // api.getUserInfo(message.senderID, function(err, ret) {
-        //     if (err) return console.error(err);
-        //     api.getThreadInfo(message.threadID, function callback(err, info) {
-        //         if (err) return console.error(err);
-        //         v.lastMentionThreadID = message.threadID;
-        //         api.sendMessage('From ' + ret[message.senderID].name + ' in ' + info.name + ':\n\n' + message.body, v.myID);
-        //     });
-        // });
-    }
-}
-
 function enablePandora(id) {
     pandoraID = id;
     v.pandoraEnabled = true;
@@ -88,7 +69,7 @@ function mitsukuRequest(api, message, input, prefix) {
                 log.info(prefix + 'Replying M:', response);
                 api.sendMessage(prefix + response, message.threadID);
             });
-    } catch (err) {
+    } catch (error) {
         log.error('------------ MITSUKU ERROR ------------\n', error);
     }
 }
@@ -116,7 +97,6 @@ function muteToggle(api, message) {
 module.exports = {
     enablePandora: enablePandora,
     respondRequest: respondRequest,
-    notifyMention: notifyMention,
     muteToggle: muteToggle,
     respondSwitch: respondSwitch
 }
