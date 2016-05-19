@@ -25,8 +25,12 @@ function listener(api, message, input) {
             for (var id in notifList) {
                 if (input.slice(1, notifList[id].length + 2).toLowerCase() == (notifList[id] + ' ')) {
                     if (message.senderID == id) continue;
-                    api.sendMessage('From ' + fullName(api, message.senderID) + ' in ' + threadName(api, message.threadID) + ':\n' + input, id);
-                    return;
+                    d.fullName(api, message.senderID, function callback(fullName) {
+                        d.threadName(api, message.threadID, function callback(threadName) {
+                            api.sendMessage('From ' + fullName + ' in ' + threadName + ':\n' + input, id);
+                            return;
+                        });
+                    });
                 }
             }
         }
@@ -37,8 +41,12 @@ function listener(api, message, input) {
         for (var id in notifList) {
             if (v.contains(input, notifList[id])) {
                 if (message.senderID == id) continue;
-                api.sendMessage('From ' + fullName(api, message.senderID) + ' in ' + threadName(api, message.threadID) + ':\n' + input, id);
-                return;
+                d.fullName(api, message.senderID, function callback(fullName) {
+                    d.threadName(api, message.threadID, function callback(threadName) {
+                        api.sendMessage('From ' + fullName + ' in ' + threadName + ':\n' + input, id);
+                        return;
+                    });
+                });
             }
         }
     }

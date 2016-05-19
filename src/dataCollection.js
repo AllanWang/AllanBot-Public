@@ -81,30 +81,35 @@ function request(fromLang, toLang, phrase, callback) {
         })
 }
 
-function firstName(api, userID) {
+function firstName(api, userID, callback) {
     v.section = 'dataCollection firstName';
+    if (!callback) callback = function() {};
     var name = f.get('users/' + userID + '/firstName');
-    if (name) return name;
+    if (name) return callback(name);
     log.info('Retrieving first name via api');
     api.getUserInfo(userID, function callback(err, obj) {
-        if (err) return log.error(err);
+        if (err) {
+            log.error(err);
+            return callback('error');
+        }
         f.setDataSimple('users/' + userID + '/firstName', obj[user].firstName, null);
+        callback(obj[user].firstName);
     });
-    return 'undefined';
 }
 
-function fullName(api, userID) {
+function fullName(api, userID, callback) {
+    if (!callback) callback = function() {};
     v.section = 'dataCollection fullName';
     var name = f.get('users/' + userID + '/name');
-    if (name) return name;
+    if (name) return callback(name);
     log.info('Retrieving full name via api');
     api.getUserInfo(userID, function callback(err, obj) {
         if (err) {
             log.error(err);
-            return 'error';
+            return callback('error');
         }
         f.setDataSimple('users/' + userID + '/name', obj[user].name, null);
-        return obj[userID].name;
+        callback(obj[userID].name);
     });
 }
 

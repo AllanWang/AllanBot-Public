@@ -7,10 +7,8 @@ var basic = require('./basic');
 function me(api, message) {
     v.section = 'endlessTalk me';
     v.continue = false;
-    api.getUserInfo(message.senderID, function(err, ret) {
-        if (err) return console.error(err);
-        var name = d.firstName(api, message.senderID);
-        f.setData(api, message, 'users/' + message.senderID + '/endless/' + message.threadID, name, '@' + name + ' how are you?');
+    d.firstName(api, message.senderID, function callback(firstName) {
+        f.setData(api, message, 'users/' + message.senderID + '/endless/' + message.threadID, firstName, '@' + firstName + ' how are you?');
     });
 }
 
