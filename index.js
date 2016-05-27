@@ -249,12 +249,12 @@ function listen(message) {
             if (v.continue && v.b.endlessTalk) ab.endlessTalk.listener(api, message, input);
             if (v.continue && v.b.help) ab.help.listener(api, message, input);
             if (v.continue && v.b.nickname) ab.nickname.listener(api, message, input);
-            if (v.continue && v.b.quickNotifications) ab.quickNotifications.listener(api, message, input);
             if (v.continue && v.b.quote) ab.quote.listener(api, message, input);
             if (v.continue && v.b.remind) ab.remind.listener(api, message, input);
             if (v.continue && v.b.saveText) ab.saveText.listener(api, message, input);
             if (v.continue && v.b.spam) ab.spam.listener(api, message, input);
             if (v.continue && v.b.translate) ab.translate.listener(api, message, input);
+            if (v.continue && v.b.quickNotifications) ab.quickNotifications.listener(api, message, input); //last, affects many other functions with :
 
             //response listener must be last
             if (v.continue && v.b.talkBack) ab.basic.respondRequest(api, message, input);
