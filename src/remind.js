@@ -79,12 +79,12 @@ function createTimeNotification2(api, message, content, offset, threadID, name) 
     var timeFormat = 'NA';
     if (moment(inputTime, 'YYYY/MM/DD HH:mm', true).isValid()) {
         log.info('time can be parsed via date');
-        time = moment.utc(inputTime, 'YYYY/MM/DD HH:mm').utcOffset(offset * (-1));
-        timeFormat = time.utcOffset(0).format('YYYY/MM/DD HH:mm');
+        time = moment.utc(inputTime, 'YYYY/MM/DD HH:mm').add(offset, 'minute');
+        timeFormat = time.subtract(offset, 'minute').format('YYYY/MM/DD HH:mm');
     } else if (moment(inputTime, 'YYYY/MM/DD H:mm', true).isValid()) {
         log.info('time can be parsed via date v2');
-        time = moment.utc(inputTime, 'YYYY/MM/DD H:mm').utcOffset(offset * (-1));
-        timeFormat = time.utcOffset(0).format('YYYY/MM/DD HH:mm');
+        time = moment.utc(inputTime, 'YYYY/MM/DD H:mm').add(offset, 'minute');
+        timeFormat = time.subtract(offset, 'minute').format('YYYY/MM/DD HH:mm');
     } else {
 
         var hour = parseInt(inputTime.slice(0, colon));
@@ -121,10 +121,12 @@ function createTimeNotification2(api, message, content, offset, threadID, name) 
             }
         }
 
+        time.add(offset, 'minute');
+
         if (ampm) {
-            timeFormat = time.utcOffset(offset).format('HH:mmA');
+            timeFormat = time.format('HH:mmA');
         } else {
-            timeFormat = time.utcOffset(offset).format('HH:mm');
+            timeFormat = time.format('HH:mm');
         }
     }
 
@@ -135,7 +137,7 @@ function createTimeNotification2(api, message, content, offset, threadID, name) 
     reminder = reminder + ':\n' + content;
 
     var invalid = true;
-    var key = time.format('x') + '_' + threadID;
+    var key = time.subtract(offset, 'minute').format('x') + '_' + threadID;
 
     while (invalid) { //make sure the key does not exist already
         if (f.get('reminders/' + key)) {
@@ -145,8 +147,9 @@ function createTimeNotification2(api, message, content, offset, threadID, name) 
             invalid = false;
         }
     }
+    log.info('key', key);
 
-    f.setData(api, message, 'reminders/' + key, reminder, 'Reminder set for ' + timeFormat + '\nTime difference: ' + moment(time).fromNow(true) + '\n' + content);
+    f.setData(api, message, 'reminders/' + key, reminder, 'Reminder set for ' + timeFormat + '\nTime difference: ' + moment.utc(time).fromNow(true) + '\n' + content);
     setTimeout(function() {
         getScheduledMessages();
     }, 5000);
