@@ -3,22 +3,12 @@ Please note that you will need the [facebook-chat-api](https://github.com/Schmav
 
 ```javascript
 var allanbot = require('allanbot'); //You can name this var whatever you want; just be sure to change all other "allanbot" variables accordingly
-var Firebase = require("firebase");
-var myFirebaseRef = new Firebase([YOUR FIREBASE URL SHOULD GO HERE];
-var login = require('facebook-chat-api');
-
-
-//This is an example of email authentication; you don't need this if you don't have email security
-myFirebaseRef.authWithPassword({
-    email: [VALID EMAIL],
-    password: [VALID PASSWORD]
-}, function(error, authData) {
-    if (error) {
-        console.log("Login Failed!", error);
-    } else {
-        console.log("Authenticated successfully with payload");
-    }
+var myFirebaseRef = require("firebase");
+myFirebaseRef.initializeApp({
+  serviceAccount: "[LOCATION OF SERVICE ACCOUNT JSON]",
+  databaseURL: "[YOUR FIREBASE URL SHOULD GO HERE]"
 });
+var login = require('facebook-chat-api');
 
 //This is for the facebook-chat-api
 login({
@@ -35,7 +25,7 @@ login({
 
     allanbot.setOptions({ //for your bot
         api: api, //YOU NEED THIS if you want anything to work
-        firebase: myFirebaseRef.child('test'), //not necessary for very basic features; but is needed for all firebase functions; this should point to a child node
+        firebase: myFirebaseRef.database().child('test'), //not necessary for very basic features; but is needed for all firebase functions; this should point to a child node
         botName: 'Testbot', //Caps do matter for display; if you leave this blank, it will take the first name on your facebook account
         myID: 123456789, //ID of your own account (if it is different from that of the bot); no need to input botID (it is now automatic)
         myName: 'Bob',
