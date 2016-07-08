@@ -5,7 +5,6 @@ var f = require('./firebase');
 var colorSuggestionBoolean = 0; //no longer a boolean but I'll keep the name.
 var colorSuggestionName = '';
 var colorList = ['#0084ff', '#44bec7', '#fa3c4c', '#d696bb', '#6699cc', '#13cf13', '#ff7e29', '#e68585', '#7646ff', '#20cef5', '#ff5ca1'];
-var previous_color = 'placeholder';
 
 function change(api, message, input) {
     v.section = 'chatColour change';
@@ -37,15 +36,16 @@ function change(api, message, input) {
             return log.info('RGB error');
         }
     }
-    if (previous_color != 'placeholder') {
-        f.setDataSimple('threads/' + message.threadID + '/previous_color', previous_color, null);
+    var currentF = f.get('threads/' + message.threadID + '/current_color');
+    if (currentF) {
+        f.setDataSimple('threads/' + message.threadID + '/previous_color', currentF, null);
     }
-    previous_color = hex;
     api.changeThreadColor(hex, message.threadID, function callback(err) {
         if (err) {
             api.sendMessage('Could not change the chat color to ' + input + '.', message.threadID);
             return console.error(err);
         }
+        f.setDataSimple('threads/' + message.threadID + '/current_color', hex, null);
     });
 }
 

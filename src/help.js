@@ -19,25 +19,9 @@ var title = {
     translate: 'Translate',
     quote: 'Quote/Find/Count',
     mcgill: 'McGill Features'
-        // indirect: '',
-        // translate,
 };
 
-//add emoji
-// helpArray = [text, save, notify, colors, emoji, me, reminders, echo, title, nickname];
-
 var info = {};
-
-///help
-/*
-function help(api, message) {
-    var intro = 'AllanBot is a Facebook Chat Bot that can be called by using "@allanbot [message]"\n\nIt also has the following features:';
-    var keywords = '\n\nSome chats have keywords that will trigger certain responses.';
-    var emoji = '\n\n"emoji [emoji here]" will change the change emoji.';
-    var title = '\n\n"title: [title]" will change the chat title; limit is 250 characters';
-
-}
-*/
 
 function listener(api, message, input) {
     v.section = 'help listener';
@@ -49,13 +33,13 @@ function menu(api, message) {
     v.continue = false;
     i = 0;
     numbers = {};
-    var sTitle = 'Please type the number corresponding to what you wish to know about.\n\n0.  Complete instructions';
+    var sTitle = 'Please type the number corresponding to what you wish to know about.\n\n0.   Complete instructions';
     for (var c = 0; c < index.length; c++) {
         if (v.b[index[c]]) {
             i++;
             numbers[i] = index[c];
             sTitle += '\n' + i + '. ';
-            if (i < 10) sTitle += ' ';
+            if (i < 10) sTitle += '  ';
             sTitle += title[index[c]];
         }
     }
@@ -75,7 +59,8 @@ function menu(api, message) {
             atbot + ' --saved" will show the saved input.\n' + atbot + ' --erase" will erase the saved input.',
 
         chatColour: atbot +
-            ' #000000" will change the chat colour to 000000. That colour can be any 6 digit hex colour, or the name of a colour.',
+            ' #000000" will change the chat colour to 000000. That colour can be any 6 digit hex colour.' +
+            '\nCommon colour names may also be recognized, and you can create your own suggestions.\n#random will set the colour to a random colour and\n#undo will change it to the previous colour.',
 
         quickNotifications: 'You need to type ' + atbot + ' --eqn" to enable this feature.\n' + atbot +
             ' @[name]: [content]" will notify [name] once he/she responds to ensure that the message is viewed.\n' + atbot +

@@ -55,12 +55,11 @@ function threadName(api, threadID, callback) {
             return;
         }
         name = info.name;
-        if (!name || name.trim().length == 0) return;
+        if (!name || name.trim().length == 0) name = 'undefined';
         f.setDataSimple('threads/' + threadID + '/name', name, null);
         callback(name);
         //return name here via callback
     });
-    // return 'undefined';
 }
 
 function request(fromLang, toLang, phrase, callback) {

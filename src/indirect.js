@@ -56,10 +56,19 @@ function printConvoMap(api) {
     v.section = 'indirect printConvoMap';
     v.continue = false;
     var map = f.get('threads');
+    var undefinedList = [];
     if (!map) return api.sendMessage('No threads found', v.myID);
     var s = 'Convo map\n';
     for (var c in map) {
-        s += '\n' + c + ': ' + map[c].name;
+        if (map[c].name == 'undefined') {
+            undefinedList.push(c);
+        } else {
+            s += '\n' + c + ': ' + map[c].name;
+        }
+    }
+    s += '\n\nUndefined\n';
+    for (var i = 0; i < undefinedList.length; i++) {
+        s += undefinedList[i] + '   ';
     }
     api.sendMessage(s, v.myID);
 }

@@ -141,7 +141,11 @@ function enableFeatures(options) {
             }
         }
         if (v.b.spam) log.info('Spam is enabled; this is only for those with devMode');
-        if (v.b.userTimeout) ab.userTimeout.afterRestart(api);
+        if (v.b.userTimeout) {
+            setTimeout(function() {
+                ab.userTimeout.afterRestart(api);
+            }, 3000);
+        }
         if (v.b.remind) {
             setTimeout(function() {
                 ab.remind.getScheduledMessages();
