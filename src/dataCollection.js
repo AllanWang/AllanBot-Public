@@ -50,10 +50,12 @@ function threadName(api, threadID, callback) {
     api.getThreadInfo(threadID, function callback(error, info) {
         if (error) {
             log.warn(threadID, 'thread could not be extracted'); //TODO figure out how to remove the errors here
+            log.error(error);
             callback('error');
+            return;
         }
         name = info.name;
-        if (!name || name.trim().length == 0) name = 'undefined';
+        if (!name || name.trim().length == 0) return;
         f.setDataSimple('threads/' + threadID + '/name', name, null);
         callback(name);
         //return name here via callback

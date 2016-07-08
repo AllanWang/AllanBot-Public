@@ -12,7 +12,12 @@ function listener(api, message, input) {
         f.setData(api, message, 'users/' + message.senderID + '/QN', null, 'Quick notifications disabled.');
     } else if ((!v.isMuted || v.godMode) && message.threadID != v.myID) {
         if (input.slice(0, 1) == '@' && input.length > 5 && input.indexOf(":") > 1) {
-            v.continue = false;
+            var validate = input.slice(0, input.indexOf(':'));
+            if (v.contains(validate, 'remind')) {
+                return;
+            } else {
+                v.continue = false;
+            }
             if (f.get('users/' + message.senderID + '/QN')) {
                 addnotifyData(api, message, input);
             } else if (!v.contains(v.ignoreArray, message.senderID)) {
