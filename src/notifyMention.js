@@ -21,11 +21,18 @@ function listener(api, message, input) {
                 break;
             case '--keys':
                 var currentKeys = f.get('notifyMention/' + message.senderID);
+                var ignoreKeys = f.get('notifyMention/ignore/' + message.senderID);
+                var text = '';
                 if (currentKeys) {
-                    api.sendMessage('Keys: ' + currentKeys.replace(/\|/g, ", "), message.threadID);
-                } else {
-                    api.sendMessage('No keys added', message.threadID);
+                    text += 'Keys: ' + currentKeys.replace(/\|/g, ", ");
                 }
+                if (ignoreKeys) {
+                    text += 'Ignored keys: ' + ignoreKeys.replace(/\|/g, ", ");
+                }
+                if (text.length == 0) {
+                    text = 'No keys found';
+                }
+                api.sendMessage(text, message.threadID);
                 break;
             default:
                 addKey(api, message, key);
@@ -50,6 +57,13 @@ function inputListener(api, message, input) {
             if (message.senderID == id) continue;
             if (id != v.myID && !v.contains(threadIDs, id)) continue;
             var keyList = notifList[id].split('|');
+            var ignoreObj = f.get('notifyMention/ignore/' + id);
+            if (ignoreObj) {
+                var ignoreList = ignoreObj.split('|');
+                for (var j = 0; j < ignoreList.length; j++) {
+                    if (v.contains(input, ignoreList[j])) return;
+                }
+            }
             for (var i = 0; i < keyList.length; i++) {
                 if (v.contains(input, keyList[i])) {
                     notifyUser(api, message, input, id);
@@ -89,7 +103,7 @@ function addKey(api, message, key) {
 
 function addAntiKey(api, message, key) {
     v.section = 'notifyMention addAntiKey';
-    var prevKey = f.get('notifyMention/' + message.senderID + '/ignore');
+    var prevKey = f.get('notifyMention/ignore/' + message.senderID);
     if (prevKey) {
         var prevKeyArr = prevKey.split('|');
         for (var i = 0; i < prevKeyArr.length; i++) {
@@ -102,7 +116,7 @@ function addAntiKey(api, message, key) {
     } else {
         key = key.toLowerCase();
     }
-    f.setData(api, message, 'notifyMention/' + message.senderID + '/ignore', key, 'Saved. You will no longer be notified when someone uses: "' + key.replace(/\|/g, ", ") + '"');
+    f.setData(api, message, 'notifyMention/ignore/' + message.senderID, key, 'Saved. You will no longer be notified when someone uses: "' + key.replace(/\|/g, ", ") + '"');
 }
 
 function notifyUser(api, message, input, id) {

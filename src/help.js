@@ -69,7 +69,7 @@ function menu(api, message) {
 
         notifyMention: atbot + ' --notify" will notify you when anyone else from any other thread mentions your name.\n' + atbot +
             ' --notify [key]" will do the same, but with [key] as the keyword. You may add multiple keys.\n' + atbot +
-            ' --notify --clear" will clear all the keys, and\n' + atbot + ' --notify ![key]" will blacklist [key] from the search (' + atbot +
+            ' --notify --clear" will clear all the keys, and\n' + atbot + ' --notify --keys will show you all your current keys\n' + atbot + ' --notify ![key]" will blacklist [key] from the search (' + atbot +
             ' --notify !bot" will not notify you if a message contains "bot")',
 
         remind: atbot + ' remind [name] @[time] [content]" will create a reminder for [name] in the future.' +
