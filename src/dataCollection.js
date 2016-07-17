@@ -2,6 +2,20 @@ var log = require("npmlog");
 var v = require('./globalVariables');
 var f = require('./firebase');
 
+//remove value from array
+function removeA(arr) {
+    var what, a = arguments,
+        L = a.length,
+        ax;
+    while (L > 1 && arr.length) {
+        what = a[--L];
+        while ((ax = arr.indexOf(what)) !== -1) {
+            arr.splice(ax, 1);
+        }
+    }
+    return arr;
+}
+
 function full(api, max) {
     v.section = 'Full data retrieval';
     log.info('--- Retrieving facebook data for firebase ---')
@@ -32,6 +46,9 @@ function thread(api, threadID) {
 
 function buildThreadName(api, threadID, ids) {
     v.section = 'dataCollection buildThreadName';
+    if (ids.length == 2 && v.contains(ids, v.botID)) {
+        removeA(ids, v.botID);
+    }
     api.getUserInfo(ids, function callback(err, obj) {
         if (err) return log.warn('buildThreadName', 'user could not be extracted');
         var threadName = '-';
@@ -82,6 +99,9 @@ function threadName(api, threadID, callback) {
 
 function buildThreadNameCallback(api, threadID, ids, callback) {
     v.section = 'dataCollection buildThreadNameCallback';
+    if (ids.length == 2 && v.contains(ids, v.botID)) {
+        removeA(ids, v.botID);
+    }
     api.getUserInfo(ids, function callback(err, obj) {
         if (err) return log.warn('buildThreadName', 'user could not be extracted');
         var threadName = '-';
