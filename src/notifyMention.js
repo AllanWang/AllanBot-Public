@@ -36,6 +36,7 @@ function listener(api, message, input) {
 
 function inputListener(api, message, input) {
     v.section = 'notifyMention inputListener';
+    if (v.contains(v.ignoreArray, message.senderID)) return;
     var notifList = f.get('notifyMention');
     if (!notifList) return;
     api.getThreadInfo(message.threadID, function callback(error, info) {
