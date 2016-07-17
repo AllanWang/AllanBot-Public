@@ -10,33 +10,33 @@ function listener(api, message, input) {
         var key = input.slice(8).trim();
         if (!key || key.length == 0) {
             d.firstName(api, message.senderID, function callback(firstName) {
-                if (firstName == 'error') return;
+                if (firstName == 'error') return api.sendMessage('Error', message.threadID);
                 addKey(api, message, firstName);
-            })
-        }
-
-        switch (key) {
-            case '--clear':
-                f.setData(api, message, 'notifyMention/' + message.senderID, null, 'Keys cleared');
-                break;
-            case '--keys':
-                var currentKeys = f.get('notifyMention/' + message.senderID);
-                var ignoreKeys = f.get('notifyMention/ignore/' + message.senderID);
-                var text = '';
-                if (currentKeys) {
-                    text += 'Keys: ' + currentKeys.replace(/\|/g, ", ");
-                }
-                if (ignoreKeys) {
-                    text += 'Ignored keys: ' + ignoreKeys.replace(/\|/g, ", ");
-                }
-                if (text.length == 0) {
-                    text = 'No keys found';
-                }
-                api.sendMessage(text, message.threadID);
-                break;
-            default:
-                addKey(api, message, key);
-                break;
+            });
+        } else {
+            switch (key) {
+                case '--clear':
+                    f.setData(api, message, 'notifyMention/' + message.senderID, null, 'Keys cleared');
+                    break;
+                case '--keys':
+                    var currentKeys = f.get('notifyMention/' + message.senderID);
+                    var ignoreKeys = f.get('notifyMention/ignore/' + message.senderID);
+                    var text = '';
+                    if (currentKeys) {
+                        text += 'Keys: ' + currentKeys.replace(/\|/g, ", ");
+                    }
+                    if (ignoreKeys) {
+                        text += 'Ignored keys: ' + ignoreKeys.replace(/\|/g, ", ");
+                    }
+                    if (text.length == 0) {
+                        text = 'No keys found';
+                    }
+                    api.sendMessage(text, message.threadID);
+                    break;
+                default:
+                    addKey(api, message, key);
+                    break;
+            }
         }
     }
 }
