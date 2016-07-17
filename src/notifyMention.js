@@ -56,7 +56,9 @@ function inputListener(api, message, input) {
         for (var id in notifList) {
             if (message.senderID == id) continue;
             if (id != v.myID && !v.contains(threadIDs, id)) continue;
-            var keyList = notifList[id].keys.split('|');
+            var keyObj = notifList[id].keys;
+            if (!keyObj) return;
+            var keyList = keyObj.split('|');
             var ignoreObj = f.get('notifyMention/' + id + '/ignore');
             if (ignoreObj) {
                 var ignoreList = ignoreObj.split('|');

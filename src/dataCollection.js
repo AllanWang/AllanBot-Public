@@ -22,15 +22,31 @@ function full(api, max) {
 function thread(api, threadID) {
     v.section = 'dataCollection thread';
     api.getThreadInfo(threadID, function callback(error, info) {
-        if (error) return log.warn(threadID, 'thread could not be extracted'); //TODO figure out how to remove the errors here
+        if (error || !info) return log.warn(threadID, 'thread could not be extracted'); //TODO figure out how to remove the errors here
         var name = info.name;
-        if (!name || name.trim().length == 0) {
-            name = 'undefined';
-            log.warn(JSON.stringify(info));
-            // log.warn("undefined", threadID);
-        }
+        if (!name || name.trim().length == 0) return buildThreadName(api, threadID, info.participantIDs);
         if (!f.get('threads/' + threadID + '/name')) api.sendMessage('New conversation found: ' + name + '\n' + threadID, v.myID);
         f.setDataSimple('threads/' + threadID + '/name', name, null);
+    });
+}
+
+function buildThreadName(api, threadID, ids) {
+    v.section = 'dataCollection buildThreadName';
+    api.getUserInfo(ids, function callback(err, obj) {
+        if (err) return log.warn('buildThreadName', 'user could not be extracted');
+        var threadName = '-';
+        var count = 0;
+        for (var user in obj) {
+            if (count != 0) {
+                threadName += ',';
+            }
+            threadName += ' ' + obj[user].firstName;
+            count++;
+            if (count > 5);
+            break;
+        }
+        if (!f.get('threads/' + threadID + '/name')) api.sendMessage('New conversation found: ' + threadName + '\n' + threadID, v.myID);
+        f.setDataSimple('threads/' + threadID + '/name', threadName, null);
     });
 }
 
@@ -59,10 +75,30 @@ function threadName(api, threadID, callback) {
             return;
         }
         name = info.name;
-        if (!name || name.trim().length == 0) name = 'undefined';
+        if (!name || name.trim().length == 0) return buildThreadNameCallback(api, threadID, info.participantIDs, callback);
         f.setDataSimple('threads/' + threadID + '/name', name, null);
         callback(name);
         //return name here via callback
+    });
+}
+
+function buildThreadNameCallback(api, threadID, ids, callback) {
+    v.section = 'dataCollection buildThreadNameCallback';
+    api.getUserInfo(ids, function callback(err, obj) {
+        if (err) return log.warn('buildThreadName', 'user could not be extracted');
+        var threadName = '-';
+        var count = 0;
+        for (var user in obj) {
+            if (count != 0) {
+                threadName += ',';
+            }
+            threadName += ' ' + obj[user].firstName;
+            count++;
+            if (count > 5);
+            break;
+        }
+        f.setDataSimple('threads/' + threadID + '/name', threadName, null);
+        return callback(threadName);
     });
 }
 
@@ -97,8 +133,8 @@ function firstName(api, userID, callback) {
             log.error(err);
             return callback('error');
         }
-        f.setDataSimple('users/' + userID + '/firstName', obj[user].firstName, null);
-        callback(obj[user].firstName);
+        f.setDataSimple('users/' + userID + '/firstName', obj[userID].firstName, null);
+        callback(obj[userID].firstName);
     });
 }
 
@@ -113,7 +149,7 @@ function fullName(api, userID, callback) {
             log.error(err);
             return callback('error');
         }
-        f.setDataSimple('users/' + userID + '/name', obj[user].name, null);
+        f.setDataSimple('users/' + userID + '/name', obj[userID].name, null);
         callback(obj[userID].name);
     });
 }
