@@ -16,11 +16,11 @@ function listener(api, message, input) {
         } else {
             switch (key) {
                 case '--clear':
-                    f.setData(api, message, 'notifyMention/' + message.senderID, null, 'Keys cleared');
+                    f.setData(api, message, 'notifyMention/' + message.senderID + '/keys', null, 'Keys cleared');
                     break;
                 case '--keys':
-                    var currentKeys = f.get('notifyMention/' + message.senderID);
-                    var ignoreKeys = f.get('notifyMention/ignore/' + message.senderID);
+                    var currentKeys = f.get('notifyMention/' + message.senderID + '/keys');
+                    var ignoreKeys = f.get('notifyMention/' + message.senderID + '/ignore');
                     var text = '';
                     if (currentKeys) {
                         text += 'Keys: ' + currentKeys.replace(/\|/g, ", ");
@@ -56,8 +56,8 @@ function inputListener(api, message, input) {
         for (var id in notifList) {
             if (message.senderID == id) continue;
             if (id != v.myID && !v.contains(threadIDs, id)) continue;
-            var keyList = notifList[id].split('|');
-            var ignoreObj = f.get('notifyMention/ignore/' + id);
+            var keyList = notifList[id].keys.split('|');
+            var ignoreObj = f.get('notifyMention/' + id + '/ignore');
             if (ignoreObj) {
                 var ignoreList = ignoreObj.split('|');
                 for (var j = 0; j < ignoreList.length; j++) {
@@ -84,12 +84,12 @@ function addKey(api, message, key) {
         addAntiKey(api, message, key.slice(1));
         return;
     }
-    var prevKey = f.get('notifyMention/' + message.senderID);
+    var prevKey = f.get('notifyMention/' + message.senderID + '/keys');
     if (prevKey) {
         var prevKeyArr = prevKey.split('|');
         for (var i = 0; i < prevKeyArr.length; i++) {
             if (v.contains(key, prevKeyArr[i])) {
-                api.sendMessage(key + ' is already incorporated within the other keys:\n' + prevKey.replace(/\|/g, ", "), message.threadID);
+                api.sendMessage(key + ' is already incorporated within the other keys:\n' + prevKey.replace(/\|/g, ", ") + '\nThere is no need to add it.', message.threadID);
                 return;
             }
         }
@@ -98,12 +98,18 @@ function addKey(api, message, key) {
         key = key.toLowerCase();
         api.sendMessage('I will notify you here; this message is just to verify that I can message you properly.', message.senderID);
     }
-    f.setData(api, message, 'notifyMention/' + message.senderID, key, 'Saved. You will now be notified when someone uses: "' + key.replace(/\|/g, ", ") + '"');
+    f.setData(api, message, 'notifyMention/' + message.senderID + '/keys', key, 'Saved. You will now be notified when someone uses: "' + key.replace(/\|/g, ", ") + '"');
 }
 
 function addAntiKey(api, message, key) {
     v.section = 'notifyMention addAntiKey';
-    var prevKey = f.get('notifyMention/ignore/' + message.senderID);
+    key = key.trim();
+    if (key.length == 0) return;
+    if (v.contains(key, '|')) {
+        api.sendMessage('Key cannot contain |, please try again', message.threadID);
+        return;
+    }
+    var prevKey = f.get('notifyMention/' + message.senderID + '/ignore');
     if (prevKey) {
         var prevKeyArr = prevKey.split('|');
         for (var i = 0; i < prevKeyArr.length; i++) {
@@ -116,7 +122,7 @@ function addAntiKey(api, message, key) {
     } else {
         key = key.toLowerCase();
     }
-    f.setData(api, message, 'notifyMention/ignore/' + message.senderID, key, 'Saved. You will no longer be notified when someone uses: "' + key.replace(/\|/g, ", ") + '"');
+    f.setData(api, message, 'notifyMention/' + message.senderID + '/ignore', key, 'Saved. You will no longer be notified when someone uses: "' + key.replace(/\|/g, ", ") + '"');
 }
 
 function notifyUser(api, message, input, id) {
