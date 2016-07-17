@@ -39,7 +39,7 @@ It also has the following features:
 
 --- Translate ---  
 "@allanbot -t [language] [text]" will translate [text].  
-[language] may either be the language you are translating to, or [input]:[output] (ie @allanbot-t french:russian bonjour)  
+[language] may either be the language you are translating to, or input:output (ie @allanbot-t french:russian bonjour)  
 "@allanbot -t" will display all the available languages  
 
 --- Quick notifications ---  

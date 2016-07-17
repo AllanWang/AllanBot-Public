@@ -35,16 +35,14 @@ function buildThreadName(api, threadID, ids) {
     api.getUserInfo(ids, function callback(err, obj) {
         if (err) return log.warn('buildThreadName', 'user could not be extracted');
         var threadName = '-';
-        var count = 0;
-        for (var user in obj) {
-            if (count != 0) {
+        var first = true;;
+        Object.keys(obj).forEach(function(user) {
+            if (!first) {
                 threadName += ',';
             }
-            threadName += ' ' + obj[user].firstName;
-            count++;
-            if (count > 5);
-            break;
-        }
+            threadName += ' ' + obj[user].name;
+            first = false;
+        });
         if (!f.get('threads/' + threadID + '/name')) api.sendMessage('New conversation found: ' + threadName + '\n' + threadID, v.myID);
         f.setDataSimple('threads/' + threadID + '/name', threadName, null);
     });
@@ -87,16 +85,14 @@ function buildThreadNameCallback(api, threadID, ids, callback) {
     api.getUserInfo(ids, function callback(err, obj) {
         if (err) return log.warn('buildThreadName', 'user could not be extracted');
         var threadName = '-';
-        var count = 0;
-        for (var user in obj) {
-            if (count != 0) {
+        var first = true;;
+        Object.keys(obj).forEach(function(user) {
+            if (!first) {
                 threadName += ',';
             }
-            threadName += ' ' + obj[user].firstName;
-            count++;
-            if (count > 5);
-            break;
-        }
+            threadName += ' ' + obj[user].name;
+            first = false;
+        });
         f.setDataSimple('threads/' + threadID + '/name', threadName, null);
         return callback(threadName);
     });
