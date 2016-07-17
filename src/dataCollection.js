@@ -24,7 +24,11 @@ function thread(api, threadID) {
     api.getThreadInfo(threadID, function callback(error, info) {
         if (error) return log.warn(threadID, 'thread could not be extracted'); //TODO figure out how to remove the errors here
         var name = info.name;
-        if (!name || name.trim().length == 0) name = 'undefined';
+        if (!name || name.trim().length == 0) {
+            name = 'undefined';
+            log.warn(JSON.stringify(info));
+            // log.warn("undefined", threadID);
+        }
         if (!f.get('threads/' + threadID + '/name')) api.sendMessage('New conversation found: ' + name + '\n' + threadID, v.myID);
         f.setDataSimple('threads/' + threadID + '/name', name, null);
     });
@@ -131,6 +135,7 @@ module.exports = {
     collect: collect,
     full: full,
     thread: thread,
+    threadName: threadName,
     firstName: firstName,
     fullName: fullName
 }

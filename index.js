@@ -169,9 +169,7 @@ function enableFeatures(options) {
 
 
 function listen(message) {
-    if (!message.body) { //no text
-        return;
-    }
+    if (!message || !message.body) return;
 
     try {
 
@@ -240,6 +238,7 @@ function listen(message) {
 
         if (v.b.mcgill) ab.mcgill.listener(api, message, message.body);
 
+
         if (!v.continue) return;
         //Input stuff goes here
         if (input) {
@@ -253,6 +252,7 @@ function listen(message) {
             if (v.continue && v.b.endlessTalk) ab.endlessTalk.listener(api, message, input);
             if (v.continue && v.b.help) ab.help.listener(api, message, input);
             if (v.continue && v.b.nickname) ab.nickname.listener(api, message, input);
+            if (v.continue && v.b.notifyMention) ab.notifyMention.listener(api, message, input);
             if (v.continue && v.b.quote) ab.quote.listener(api, message, input);
             if (v.continue && v.b.remind) ab.remind.listener(api, message, input);
             if (v.continue && v.b.saveText) ab.saveText.listener(api, message, input);
@@ -263,6 +263,9 @@ function listen(message) {
             //response listener must be last
             if (v.continue && v.b.talkBack) ab.basic.respondRequest(api, message, input);
         }
+
+        if (v.b.notifyMention) ab.notifyMention.inputListener(api, message, message.body); //the actual listener
+
     } catch (error) {
         log.error(error);
         if (v.b.errorNotifications) api.sendMessage(v.botName + ' error: ' + v.section, v.myID);

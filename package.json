@@ -1,6 +1,6 @@
 {
     "name": "allanbot",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "dependencies": {
         "facebook-chat-api": "git://github.com/schmavery/facebook-chat-api",
         "firebase": "^3.1.0",

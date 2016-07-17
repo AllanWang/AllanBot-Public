@@ -95,8 +95,51 @@ function output(api, message, text, save) {
     if (save) f.setDataSimple('threads/' + message.threadID + '/quotes/' + Date.now() + '_' + message.senderID, s, null);
 }
 
+function context(api, threadID, key) {
+    v.section = 'quote context';
+    v.continue = false;
+    var searching = true;
+    setTimeout(function() {
+        if (searching) api.sendMessage('Still finding context for ' + key + '...', threadID);
+    }, 5000);
+    api.getThreadHistory(threadID, 1, 1000, null, function callback(error, history) {
+        if (error) return log.error('Error in getting quote', error);
+        for (var j = history.length - 2; j >= 0; j--) { //do not include last message
+            if (!history[j].body) continue;
+            if (!searching) break;
+            if (v.contains(history[j].body, key) && !v.contains(history[j].body, v.botName) && !v.contains(history[j].body, "@" + key) && !v.contains(history[j].senderID, v.botID)) {
+                searching = false;
+                var result = 'Context for ' + key;
+                var lastID = 0;
+                var contextRange = 5;
+                for (var k = j - contextRange; k <= j + contextRange; k++) {
+                    if (k < 0) continue;
+                    if (k > history.length - 1) continue;
+                    if (!history[k].body) continue;
+                    result += '\n';
+                    if (lastID != history[k].senderID) {
+                        result += '\n' + history[k].senderName + ': ';
+                        lastID = history[k].senderID;
+                    }
+                    result += history[k].body;
+                }
+                api.sendMessage(result, threadID);
+            }
+
+        }
+
+
+        if (searching) {
+            searching = false;
+            api.sendMessage('Could not find ' + key + ' within the last ' + history.length + ' messages.', threadID);
+        }
+
+    });
+}
+
 module.exports = {
     create: create,
     listener: listener,
-    print: print
+    print: print,
+    context: context
 }

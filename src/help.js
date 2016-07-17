@@ -3,7 +3,7 @@ var v = require('./globalVariables');
 var helpBoolean = 0;
 var i = 0;
 
-var index = ['saveText', 'translate', 'quickNotifications', 'remind', 'quote', 'chatColour', 'chatTitle', 'nickname', 'echo', 'endlessTalk', 'mcgill'];
+var index = ['saveText', 'translate', 'quickNotifications', 'notifyMention', 'remind', 'quote', 'chatColour', 'chatTitle', 'nickname', 'echo', 'endlessTalk', 'mcgill'];
 var numbers = {};
 
 var title = {
@@ -12,6 +12,7 @@ var title = {
     saveText: 'Saving text',
     chatColour: 'Chat colours',
     quickNotifications: 'Quick notifications',
+    notifyMention: 'Mention notifications',
     userTimeout: 'User timeout',
     remind: 'Reminders',
     nickname: 'Chat nicknames',
@@ -59,12 +60,17 @@ function menu(api, message) {
             atbot + ' --saved" will show the saved input.\n' + atbot + ' --erase" will erase the saved input.',
 
         chatColour: atbot +
-            ' #000000" will change the chat colour to 000000. That colour can be any 6 digit hex colour.' +
+            ' #000000" will change the chat colour to 000000 (black). That colour can be any 6 digit hex colour.' +
             '\nCommon colour names may also be recognized, and you can create your own suggestions.\n#random will set the colour to a random colour and\n#undo will change it to the previous colour.',
 
         quickNotifications: 'You need to type ' + atbot + ' --eqn" to enable this feature.\n' + atbot +
             ' @[name]: [content]" will notify [name] once he/she responds to ensure that the message is viewed.\n' + atbot +
             ' --dqn" will disable this feature.',
+
+        notifyMention: atbot + ' --notify" will notify you when anyone else from any other thread mentions your name.\n' + atbot +
+            ' --notify [key]" will do the same, but with [key] as the keyword. You may add multiple keys.\n' + atbot +
+            ' --notify --clear" will clear all the keys, and\n' + atbot + ' --notify ![key]" will blacklist [key] from the search (' + atbot +
+            ' --notify !bot" will not notify you if a message contains "bot")',
 
         remind: atbot + ' remind [name] @[time] [content]" will create a reminder for [name] in the future.' +
             '\n[time] can be formatted by HH:mm (with or without am/pm) or by a full date(YYYY/MM/DD HH:mm)',

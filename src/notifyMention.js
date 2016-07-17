@@ -5,96 +5,116 @@ var d = require('./dataCollection');
 
 function listener(api, message, input) {
     v.section = 'notifyMention listener';
-    if (input.slice(0, 1) == '@') {
-        if ((input.toLowerCase().slice(0, v.botNameLength + 2) == '@' + v.botNameL + ' ') && input.length > (v.botNameLength + 2)) {
-            input = input.slice(v.botNameLength + 2);
-            if (input.slice(0, 8) == '--notify') {
-
-            } else if (input.slice(0, 9) == '--context') {
-                if (!f.get('notifyMention/' + message.senderID)) {
-                    api.sendMessage('Mention notifications are not enabled for you; to enable it, type "@' + v.botNameL + ' --notify"', message.threadID);
-                }
-                if (input.trim().length == 9) {
-
-                }
-            }
-        } else {
-            if (v.contains(v.ignoreArray, message.senderID)) return;
-            var notifList = f.get('notifyMention');
-            if (!notifList) return;
-            for (var id in notifList) {
-                if (input.slice(1, notifList[id].length + 2).toLowerCase() == (notifList[id] + ' ')) {
-                    if (message.senderID == id) continue;
-                    d.fullName(api, message.senderID, function callback(fullName) {
-                        d.threadName(api, message.threadID, function callback(threadName) {
-                            api.sendMessage('From ' + fullName + ' in ' + threadName + ':\n' + input, id);
-                            return;
-                        });
-                    });
-                }
-            }
+    if (input.slice(0, 8) == '--notify') {
+        v.continue = false;
+        var key = input.slice(8).trim();
+        if (!key || key.length == 0) {
+            d.firstName(api, message.senderID, function callback(firstName) {
+                if (firstName == 'error') return;
+                addKey(api, message, firstName);
+            })
         }
-    } else {
-        if (v.contains(v.ignoreArray, message.senderID)) return;
-        var notifList = f.get('notifyMention');
-        if (!notifList) return;
-        for (var id in notifList) {
-            if (v.contains(input, notifList[id])) {
-                if (message.senderID == id) continue;
-                d.fullName(api, message.senderID, function callback(fullName) {
-                    d.threadName(api, message.threadID, function callback(threadName) {
-                        api.sendMessage('From ' + fullName + ' in ' + threadName + ':\n' + input, id);
-                        return;
-                    });
-                });
-            }
+
+        switch (key) {
+            case '--clear':
+                f.setData(api, message, 'notifyMention/' + message.senderID, null, 'Keys cleared');
+                break;
+            case '--keys':
+                var currentKeys = f.get('notifyMention/' + message.senderID);
+                if (currentKeys) {
+                    api.sendMessage('Keys: ' + currentKeys.replace(/\|/g, ", "), message.threadID);
+                } else {
+                    api.sendMessage('No keys added', message.threadID);
+                }
+                break;
+            default:
+                addKey(api, message, key);
+                break;
         }
     }
 }
 
-function context(api, threadID) {
-    v.section = 'indirect context';
-    v.continue = false;
-    var searching = true;
-    setTimeout(function() {
-        if (searching) api.sendMessage('Still searching for context...', threadID);
-    }, 5000);
-    api.getThreadHistory(threadID, 1, 1000, null, function callback(error, history) {
-        if (error) return log.error('Error in getting quote', error);
-        for (var j = history.length - 2; j >= 0; j--) { //do not include last message
-            if (!history[j].body) continue;
-            if (!searching) break;
-            if (v.contains(history[j].body, v.myName) && !v.contains(history[j].body, v.botName) && !v.contains(history[j].body, "@" + v.myName) && !v.contains(history[j].senderID, v.botID)) {
-                searching = false;
-                var result = 'Context for ' + v.myName + ' in ' + f.get('threads/' + threadID + '/name');
-                var lastID = 0;
-                var contextRange = 5;
-                for (var k = j - contextRange; k <= j + contextRange; k++) {
-                    if (k < 0) continue;
-                    if (k > history.length - 1) continue;
-                    if (!history[k].body) continue;
-                    result += '\n';
-                    if (lastID != history[k].senderID) {
-                        result += '\n' + history[k].senderName + ': ';
-                        lastID = history[k].senderID;
-                    }
-                    result += history[k].body;
+function inputListener(api, message, input) {
+    v.section = 'notifyMention inputListener';
+    var notifList = f.get('notifyMention');
+    if (!notifList) return;
+    api.getThreadInfo(message.threadID, function callback(error, info) {
+        var threadIDs;
+        if (!error) {
+            threadIDs = info.participantIDs;
+        } else {
+            log.warn('participants not found for', message.threadID);
+        }
+        for (var id in notifList) {
+            if (message.senderID == id) continue;
+            if (id != v.myID && !v.contains(threadIDs, id)) continue;
+            var keyList = notifList[id].split('|');
+            for (var i = 0; i < keyList.length; i++) {
+                if (v.contains(input, keyList[i])) {
+                    notifyUser(api, message, input, id);
+                    return;
                 }
-                api.sendMessage(result, threadID);
             }
-
         }
+    });
+}
 
-
-        if (searching) {
-            searching = false;
-            api.sendMessage('Could not find ' + v.myName + ' within the last ' + history.length + ' messages.', threadID);
+function addKey(api, message, key) {
+    v.section = 'notifyMention addKey';
+    if (v.contains(key, '|')) {
+        api.sendMessage('Key cannot contain |, please try again', message.threadID);
+        return;
+    }
+    if (key.slice(0, 1) == '!') {
+        addAntiKey(api, message, key.slice(0, 1));
+        return;
+    }
+    var prevKey = f.get('notifyMention/' + message.senderID);
+    if (prevKey) {
+        var prevKeyArr = prevKey.split('|');
+        for (var i = 0; i < prevKeyArr.length; i++) {
+            if (v.contains(key, prevKeyArr[i])) {
+                api.sendMessage(key + ' is already incorporated within the other keys:\n' + prevKey.replace(/\|/g, ", "), message.threadID);
+                return;
+            }
         }
+        key = prevKey + '|' + key;
+    } else {
+        key = key.toLowerCase();
+        api.sendMessage('I will notify you here; this message is just to verify that I can message you properly.', message.senderID);
+    }
+    f.setData(api, message, 'notifyMention/' + message.senderID, key, 'Saved. You will now be notified when someone uses: "' + key.replace(/\|/g, ", ") + '"');
+}
 
+function addAntiKey(api, message, key) {
+    v.section = 'notifyMention addAntiKey';
+    var prevKey = f.get('notifyMention/' + message.senderID + '/ignore');
+    if (prevKey) {
+        var prevKeyArr = prevKey.split('|');
+        for (var i = 0; i < prevKeyArr.length; i++) {
+            if (v.contains(key, prevKeyArr[i])) {
+                api.sendMessage(key + ' is already incorporated within the other ignored keys:\n' + prevKey.replace(/\|/g, ", "), message.threadID);
+                return;
+            }
+        }
+        key = prevKey + '|' + key;
+    } else {
+        key = key.toLowerCase();
+    }
+    f.setData(api, message, 'notifyMention/' + message.senderID + '/ignore', key, 'Saved. You will no longer be notified when someone uses: "' + key.replace(/\|/g, ", ") + '"');
+}
+
+function notifyUser(api, message, input, id) {
+    v.section = 'notifyMention notifyUser';
+    d.fullName(api, message.senderID, function callback(fullName) {
+        d.threadName(api, message.threadID, function callback(threadName) {
+            api.sendMessage('From ' + fullName + ' in ' + threadName + ':\n' + input, id);
+            return;
+        });
     });
 }
 
 module.exports = {
     listener: listener,
-    context: context
+    inputListener: inputListener
 }
