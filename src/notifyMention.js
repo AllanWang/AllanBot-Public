@@ -81,7 +81,7 @@ function addKey(api, message, key) {
         return;
     }
     if (key.slice(0, 1) == '!') {
-        addAntiKey(api, message, key.slice(0, 1));
+        addAntiKey(api, message, key.slice(1));
         return;
     }
     var prevKey = f.get('notifyMention/' + message.senderID);
