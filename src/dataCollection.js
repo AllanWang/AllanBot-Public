@@ -46,9 +46,7 @@ function thread(api, threadID) {
 
 function buildThreadName(api, threadID, ids) {
     v.section = 'dataCollection buildThreadName';
-    if (ids.length == 2 && v.contains(ids, v.botID)) {
-        removeA(ids, v.botID);
-    }
+    if (ids.length == 2) ids = removeA(ids, v.botID);
     api.getUserInfo(ids, function callback(err, obj) {
         if (err) return log.warn('buildThreadName', 'user could not be extracted');
         var threadName = '-';
@@ -99,9 +97,7 @@ function threadName(api, threadID, callback) {
 
 function buildThreadNameCallback(api, threadID, ids, callback) {
     v.section = 'dataCollection buildThreadNameCallback';
-    if (ids.length == 2 && v.contains(ids, v.botID)) {
-        removeA(ids, v.botID);
-    }
+    if (ids.length == 2) ids = removeA(ids, v.botID);
     api.getUserInfo(ids, function callback(err, obj) {
         if (err) return log.warn('buildThreadName', 'user could not be extracted');
         var threadName = '-';
