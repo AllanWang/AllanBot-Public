@@ -12,6 +12,7 @@ module.exports = {
     myName: null,
     botID: null,
     botNameLength: null,
+    welcomeMessage: null,
     firebaseOn: false,
     continue: true,
     section: null,
