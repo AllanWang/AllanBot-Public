@@ -5,7 +5,6 @@
         "facebook-chat-api": "git://github.com/AllanWang/facebook-chat-api",
         "firebase": "^3.1.0",
         "xml2js": "^0.4.16",
-        "fs": "^0.0.2",
         "mitsuku-api": "git://github.com/eleventigers/mitsuku-api",
         "request-promise": "git://github.com/request/request-promise",
         "npmlog": "git://github.com/npm/npmlog",
