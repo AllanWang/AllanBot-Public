@@ -2,7 +2,7 @@
     "name": "allanbot",
     "version": "1.3.0",
     "dependencies": {
-        "facebook-chat-api": "git://github.com/AllanWang/facebook-chat-api",
+        "facebook-chat-api": "git://github.com/Schmavery/facebook-chat-api",
         "firebase": "^3.3.0",
         "xml2js": "^0.4.16",
         "mitsuku-api": "git://github.com/eleventigers/mitsuku-api",
