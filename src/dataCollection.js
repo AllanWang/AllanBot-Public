@@ -44,10 +44,13 @@ function cleanup(api, message) {
 }
 
 function acceptPendingThreads(api) {
-  log.warn('acceptPendingThreads');
+  log.info('acceptPendingThreads');
   api.getThreadList(0, 10, 'pending', function callback(err, arr) {
-    if (err && v.errorNotifications) return api.sendMessage('checkPendingThreads error', v.myID);
-    if (arr.length == 0) return log.warn('no pending threads');
+    if (err) {
+       if (v.errorNotifications) api.sendMessage('checkPendingThreads error', v.myID);
+       return log.error(err);
+    }
+    if (!arr || arr.length == 0) return log.info('no pending threads');
     var arrThreadID = [];
     for (var i = 0; i < arr.length; i++) {
       var threadObj = arr[i];
@@ -74,7 +77,7 @@ function acceptPendingThreads(api) {
 function thread(api, threadID) {
   v.section = 'dataCollection thread';
   api.getThreadInfo(threadID, function callback(error, info) {
-    if (error || !info) return log.warn(threadID, 'thread could not be extracted'); //TODO figure out how to remove the errors here
+    if (error || !info) return log.warn(threadID, 'thread could not be extracted', error); //TODO figure out how to remove the errors here
     var name = info.name;
     if (!name || name.trim().length == 0) return buildThreadName(api, threadID, info.participantIDs);
     if (!f.get('threads/' + threadID + '/name')) api.sendMessage('New conversation found: ' + name + '\n' + threadID, v.myID);
