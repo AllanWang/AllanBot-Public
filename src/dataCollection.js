@@ -4,236 +4,245 @@ var f = require('./firebase');
 
 //remove value from array
 function removeA(arr) {
-  var what, a = arguments,
-    L = a.length,
-    ax;
-  while (L > 1 && arr.length) {
-    what = a[--L];
-    while ((ax = arr.indexOf(what)) !== -1) {
-      arr.splice(ax, 1);
+    var what, a = arguments,
+        L = a.length,
+        ax;
+    while (L > 1 && arr.length) {
+        what = a[--L];
+        while ((ax = arr.indexOf(what)) !== -1) {
+            arr.splice(ax, 1);
+        }
     }
-  }
-  return arr;
+    return arr;
 }
 
 function full(api, max) {
-  v.section = 'Full data retrieval';
-  log.info('--- Retrieving facebook data for firebase ---')
-  api.getThreadList(0, max, function callback(err, arr) {
-    if (err) return log.error(err);
-    var id = []
-    for (var i = 0; i < arr.length; i++) {
-      thread(api, arr[i].threadID);
-      for (var j = 0; j < arr[i].participantIDs.length; j++) {
-        if (v.contains(id, arr[i].participantIDs[j])) continue;
-        id.push(arr[i].participantIDs[j]);
-      }
-    }
-    user(api, id);
-  });
+    v.section = 'Full data retrieval';
+    log.info('--- Retrieving facebook data for firebase ---')
+    api.getThreadList(0, max, function callback(err, arr) {
+        if (err) throw err;
+        var id = []
+        for (var i = 0; i < arr.length; i++) {
+            thread(api, arr[i].threadID);
+            for (var j = 0; j < arr[i].participantIDs.length; j++) {
+                if (v.contains(id, arr[i].participantIDs[j])) continue;
+                id.push(arr[i].participantIDs[j]);
+            }
+        }
+        user(api, id);
+    });
 }
 
 function cleanup(api, message) {
-  var threadObj = f.get('threads');
-  Object.keys(threadObj).forEach(function(thread) {
-    if ((Object.keys(threadObj[thread])).length == 1) {
-      f.setDataSimple('threads/' + thread, null, null);
-    }
-  });
-  api.sendMessage('Thread Data Cleaned', message.threadID);
+    var threadObj = f.get('threads');
+    Object.keys(threadObj).forEach(function(thread) {
+        if ((Object.keys(threadObj[thread])).length == 1) {
+            f.setDataSimple('threads/' + thread, null, null);
+        }
+    });
+    api.sendMessage('Thread Data Cleaned', message.threadID);
 }
 
 function acceptPendingThreads(api) {
-  log.info('acceptPendingThreads');
-  api.getThreadList(0, 10, 'pending', function callback(err, arr) {
-    if (err) {
-       if (v.errorNotifications) api.sendMessage('checkPendingThreads error', v.myID);
-       return log.error(err);
-    }
-    if (!arr || arr.length == 0) return log.info('no pending threads');
-    var arrThreadID = [];
-    for (var i = 0; i < arr.length; i++) {
-      var threadObj = arr[i];
-      arrThreadID.push(threadObj.threadID);
-      var name = threadObj.name;
-      if (!name || name.trim().length == 0) {
-        buildThreadName(api, threadObj.threadID, threadObj.participantIDs);
-        continue;
-      }
-      if (!f.get('threads/' + threadObj.threadID + '/name')) api.sendMessage('New conversation found: ' + name + '\n' + threadObj.threadID, v.myID);
-      f.setDataSimple('threads/' + threadObj.threadID + '/name', name, null);
-    }
-    api.handleMessageRequest(arrThreadID, true, function callback(err) {
-      if (err && v.errorNotifications) return api.sendMessage('checkPendingThreads, handleMessageRequest error', v.myID);
-      if (v.welcomeMessage) {
-        for (var j = 0; j < arrThreadID.length; j++) {
-          api.sendMessage(v.welcomeMessage, threadObj.threadID);
+    log.info('acceptPendingThreads');
+    api.getThreadList(0, 10, 'pending', function callback(err, arr) {
+        if (err) {
+            if (v.errorNotifications) api.sendMessage('checkPendingThreads error', v.myID);
+            throw err;
         }
-      }
+        if (!arr || arr.length == 0) return log.info('no pending threads');
+        var arrThreadID = [];
+        for (var i = 0; i < arr.length; i++) {
+            var threadObj = arr[i];
+            arrThreadID.push(threadObj.threadID);
+            var name = threadObj.name;
+            if (!name || name.trim().length == 0) {
+                buildThreadName(api, threadObj.threadID, threadObj.participantIDs);
+                continue;
+            }
+            if (!f.get('threads/' + threadObj.threadID + '/name')) api.sendMessage('New conversation found: ' + name + '\n' + threadObj.threadID, v.myID);
+            f.setDataSimple('threads/' + threadObj.threadID + '/name', name, null);
+        }
+        api.handleMessageRequest(arrThreadID, true, function callback(err) {
+            if (err && v.errorNotifications) return api.sendMessage('checkPendingThreads, handleMessageRequest error', v.myID);
+            if (v.welcomeMessage) {
+                for (var j = 0; j < arrThreadID.length; j++) {
+                    api.sendMessage(v.welcomeMessage, threadObj.threadID);
+                }
+            }
+        });
     });
-  });
 }
 
 function thread(api, threadID) {
-  v.section = 'dataCollection thread';
-  api.getThreadInfo(threadID, function callback(error, info) {
-    if (error || !info) return log.warn(threadID, 'thread could not be extracted', error); //TODO figure out how to remove the errors here
-    var name = info.name;
-    if (!name || name.trim().length == 0) return buildThreadName(api, threadID, info.participantIDs);
-    if (!f.get('threads/' + threadID + '/name')) api.sendMessage('New conversation found: ' + name + '\n' + threadID, v.myID);
-    f.setDataSimple('threads/' + threadID + '/name', name, null);
-  });
+    v.section = 'dataCollection thread';
+    api.getThreadInfo(threadID, function callback(error, info) {
+        if (error || !info) {
+            log.warn(threadID, 'thread could not be extracted');
+            throw error; //TODO figure out how to remove the errors here
+        }
+        var name = info.name;
+        if (!name || name.trim().length == 0) return buildThreadName(api, threadID, info.participantIDs);
+        if (!f.get('threads/' + threadID + '/name')) api.sendMessage('New conversation found: ' + name + '\n' + threadID, v.myID);
+        f.setDataSimple('threads/' + threadID + '/name', name, null);
+    });
 }
 
 function buildThreadName(api, threadID, ids) {
-  v.section = 'dataCollection buildThreadName';
-  if (ids.length == 2) ids = removeA(ids, v.botID);
-  api.getUserInfo(ids, function callback(err, obj) {
-    if (err) return log.warn('buildThreadName', 'user could not be extracted');
-    var threadName = '-';
-    var first = true;;
-    Object.keys(obj).forEach(function(user) {
-      if (!first) {
-        threadName += ',';
-      }
-      threadName += ' ' + obj[user].name;
-      first = false;
+    v.section = 'dataCollection buildThreadName';
+    if (ids.length == 2) ids = removeA(ids, v.botID);
+    api.getUserInfo(ids, function callback(err, obj) {
+        if (err) {
+            log.warn('buildThreadName', 'user could not be extracted');
+            throw err;
+        }
+        var threadName = '-';
+        var first = true;;
+        Object.keys(obj).forEach(function(user) {
+            if (!first) {
+                threadName += ',';
+            }
+            threadName += ' ' + obj[user].name;
+            first = false;
+        });
+        if (!f.get('threads/' + threadID + '/name')) api.sendMessage('New conversation found: ' + threadName + '\n' + threadID, v.myID);
+        f.setDataSimple('threads/' + threadID + '/name', threadName, null);
     });
-    if (!f.get('threads/' + threadID + '/name')) api.sendMessage('New conversation found: ' + threadName + '\n' + threadID, v.myID);
-    f.setDataSimple('threads/' + threadID + '/name', threadName, null);
-  });
 }
 
 function user(api, userID) {
-  v.section = 'dataCollection user';
-  api.getUserInfo(userID, function callback(err, obj) {
-    if (err) return log.warn(userID, 'user could not be extracted');
-    for (var user in obj) {
-      var fLocation = 'users/' + user + '/'; //as a base, extra child will be added later
-      f.setDataSimple(fLocation + 'name', obj[user].name, null);
-      f.setDataSimple(fLocation + 'firstName', obj[user].firstName, null);
-    }
-  });
+    v.section = 'dataCollection user';
+    api.getUserInfo(userID, function callback(err, obj) {
+        if (err) {
+            log.warn(userID, 'user could not be extracted');
+            throw err;
+        }
+        for (var user in obj) {
+            var fLocation = 'users/' + user + '/'; //as a base, extra child will be added later
+            f.setDataSimple(fLocation + 'name', obj[user].name, null);
+            f.setDataSimple(fLocation + 'firstName', obj[user].firstName, null);
+        }
+    });
 }
 
 function threadName(api, threadID, callback) {
-  v.section = 'dataCollection threadName';
-  if (!callback) callback = function() {};
-  var name = f.get('threads/' + threadID + '/name');
-  if (name) return callback(name);
-  api.getThreadInfo(threadID, function callback(error, info) {
-    if (error) {
-      log.warn(threadID, 'thread could not be extracted'); //TODO figure out how to remove the errors here
-      log.error(error);
-      callback('error');
-      return;
-    }
-    name = info.name;
-    if (!name || name.trim().length == 0) return buildThreadNameCallback(api, threadID, info.participantIDs, callback);
-    f.setDataSimple('threads/' + threadID + '/name', name, null);
-    callback(name);
-    //return name here via callback
-  });
+    v.section = 'dataCollection threadName';
+    if (!callback) callback = function() {};
+    var name = f.get('threads/' + threadID + '/name');
+    if (name) return callback(name);
+    api.getThreadInfo(threadID, function callback(error, info) {
+        if (error) {
+            log.warn(threadID, 'thread could not be extracted'); //TODO figure out how to remove the errors here
+            log.error(error);
+            callback('error');
+            return;
+        }
+        name = info.name;
+        if (!name || name.trim().length == 0) return buildThreadNameCallback(api, threadID, info.participantIDs, callback);
+        f.setDataSimple('threads/' + threadID + '/name', name, null);
+        callback(name);
+        //return name here via callback
+    });
 }
 
 function buildThreadNameCallback(api, threadID, ids, callback) {
-  v.section = 'dataCollection buildThreadNameCallback';
-  if (ids.length == 2) ids = removeA(ids, v.botID);
-  api.getUserInfo(ids, function callback(err, obj) {
-    if (err) return log.warn('buildThreadName', 'user could not be extracted');
-    var threadName = '-';
-    var first = true;;
-    Object.keys(obj).forEach(function(user) {
-      if (!first) {
-        threadName += ',';
-      }
-      threadName += ' ' + obj[user].name;
-      first = false;
+    v.section = 'dataCollection buildThreadNameCallback';
+    if (ids.length == 2) ids = removeA(ids, v.botID);
+    api.getUserInfo(ids, function callback(err, obj) {
+        if (err) return log.warn('buildThreadName', 'user could not be extracted');
+        var threadName = '-';
+        var first = true;;
+        Object.keys(obj).forEach(function(user) {
+            if (!first) {
+                threadName += ',';
+            }
+            threadName += ' ' + obj[user].name;
+            first = false;
+        });
+        f.setDataSimple('threads/' + threadID + '/name', threadName, null);
+        return callback(threadName);
     });
-    f.setDataSimple('threads/' + threadID + '/name', threadName, null);
-    return callback(threadName);
-  });
 }
 
 function request(fromLang, toLang, phrase, callback) {
-  v.section = 'translate request';
-  invalid = '';
-  fromLang = getLanKey(fromLang);
-  toLang = getLanKey(toLang);
-  if (invalid) {
-    callback(null, invalid + ' is not a valid language/key');
-    return;
-  }
-  // log.info('Translating', phrase, 'from', fromLang, 'to', toLang);
-  translate(fromLang, toLang, phrase)
-    .then(function(result) {
-      callback(null, result);
-    })
-    .catch(function(err) {
-      log.error('Translate error', err);
-      return callback(err);
-    })
+    v.section = 'translate request';
+    invalid = '';
+    fromLang = getLanKey(fromLang);
+    toLang = getLanKey(toLang);
+    if (invalid) {
+        callback(null, invalid + ' is not a valid language/key');
+        return;
+    }
+    // log.info('Translating', phrase, 'from', fromLang, 'to', toLang);
+    translate(fromLang, toLang, phrase)
+        .then(function(result) {
+            callback(null, result);
+        })
+        .catch(function(err) {
+            log.error('Translate error', err);
+            return callback(err);
+        })
 }
 
 function firstName(api, userID, callback) {
-  v.section = 'dataCollection firstName';
-  if (!callback) callback = function() {};
-  var name = f.get('users/' + userID + '/firstName');
-  if (name) return callback(name);
-  log.info('Retrieving first name via api');
-  api.getUserInfo(userID, function callback(err, obj) {
-    if (err) {
-      log.error(err);
-      return callback('error');
-    }
-    f.setDataSimple('users/' + userID + '/firstName', obj[userID].firstName, null);
-    callback(obj[userID].firstName);
-  });
+    v.section = 'dataCollection firstName';
+    if (!callback) callback = function() {};
+    var name = f.get('users/' + userID + '/firstName');
+    if (name) return callback(name);
+    log.info('Retrieving first name via api');
+    api.getUserInfo(userID, function callback(err, obj) {
+        if (err) {
+            log.error(err);
+            return callback('error');
+        }
+        f.setDataSimple('users/' + userID + '/firstName', obj[userID].firstName, null);
+        callback(obj[userID].firstName);
+    });
 }
 
 function fullName(api, userID, callback) {
-  if (!callback) callback = function() {};
-  v.section = 'dataCollection fullName';
-  var name = f.get('users/' + userID + '/name');
-  if (name) return callback(name);
-  log.info('Retrieving full name via api');
-  api.getUserInfo(userID, function callback(err, obj) {
-    if (err) {
-      log.error(err);
-      return callback('error');
-    }
-    f.setDataSimple('users/' + userID + '/name', obj[userID].name, null);
-    callback(obj[userID].name);
-  });
+    if (!callback) callback = function() {};
+    v.section = 'dataCollection fullName';
+    var name = f.get('users/' + userID + '/name');
+    if (name) return callback(name);
+    log.info('Retrieving full name via api');
+    api.getUserInfo(userID, function callback(err, obj) {
+        if (err) {
+            log.error(err);
+            return callback('error');
+        }
+        f.setDataSimple('users/' + userID + '/name', obj[userID].name, null);
+        callback(obj[userID].name);
+    });
 }
 
 function collect(api, message, input) {
-  v.section = 'dataCollection collect';
-  if (message.senderID != v.myID) return;
-  if (input.slice(0, 2) == '% ') {
-    v.continue = false;
-    thread(api, input.slice(2));
-  }
-  switch (input) {
-    case '--collect':
-      v.continue = false;
-      api.sendMessage('Collecting thread and user data...', message.threadID);
-      full(api, 100);
-      break;
-    case '--clean':
-      v.continue = false;
-      log.warn('cleaning');
-      cleanup(api, message);
-      break;
-  }
+    v.section = 'dataCollection collect';
+    if (message.senderID != v.myID) return;
+    if (input.slice(0, 2) == '% ') {
+        v.continue = false;
+        thread(api, input.slice(2));
+    }
+    switch (input) {
+        case '--collect':
+            v.continue = false;
+            api.sendMessage('Collecting thread and user data...', message.threadID);
+            full(api, 100);
+            break;
+        case '--clean':
+            v.continue = false;
+            log.warn('cleaning');
+            cleanup(api, message);
+            break;
+    }
 }
 
 module.exports = {
-  collect: collect,
-  full: full,
-  acceptPendingThreads: acceptPendingThreads,
-  thread: thread,
-  threadName: threadName,
-  firstName: firstName,
-  fullName: fullName
+    collect: collect,
+    full: full,
+    acceptPendingThreads: acceptPendingThreads,
+    thread: thread,
+    threadName: threadName,
+    firstName: firstName,
+    fullName: fullName
 }

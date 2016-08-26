@@ -8,7 +8,7 @@ function listener(api, message, input) {
     if (input.slice(0, 11) == '--find all ') {
         v.continue = false;
         api.getThreadInfo(message.threadID, function callback(error, info) {
-            if (error) return log.error('Count error', error);
+            if (error) throw error;
             create(api, message, input.slice(11), info.messageCount);
         });
         return;
@@ -24,7 +24,7 @@ function countFunction(api, message) {
     v.section = 'quote countFunction';
     v.continue = false;
     api.getThreadInfo(message.threadID, function callback(error, info) {
-        if (error) return log.error('Count error', error);
+        if (error) throw error;
         api.sendMessage('There are ' + info.messageCount + ' messages', message.threadID);
     });
 }
@@ -58,7 +58,7 @@ function create(api, message, input, i, save) {
         if (count == 0) api.sendMessage('Still looking for ' + input + '...', message.threadID);
     }, 5000);
     api.getThreadHistory(message.threadID, 1, i, null, function callback(error, history) {
-        if (error) return log.error('Error in getting quote', error);
+        if (error) throw error;
         for (var j = history.length - 2; j >= 0; j--) { //do not include last message
             if (!history[j].body) continue;
             if (v.contains(history[j].body, input)) {
@@ -103,7 +103,7 @@ function context(api, threadID, key) {
         if (searching) api.sendMessage('Still finding context for ' + key + '...', threadID);
     }, 5000);
     api.getThreadHistory(threadID, 1, 1000, null, function callback(error, history) {
-        if (error) return log.error('Error in getting quote', error);
+        if (error) throw error;
         for (var j = history.length - 2; j >= 0; j--) { //do not include last message
             if (!history[j].body) continue;
             if (!searching) break;

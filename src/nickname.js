@@ -38,7 +38,7 @@ function changeNickname(api, message, t) {
                 // console.log('id ' + id);
                 f.setDataSimple('threads/' + message.threadID + '/nicknames/' + id, info.nicknames[id], null);
                 api.changeNickname('', message.threadID, id, function callback(err) {
-                    if (err) return log.error(err);
+                    if (err) throw err;
                 });
 
             }

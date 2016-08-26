@@ -61,8 +61,8 @@ function get(location) {
     var current = v.sBase;
     try {
         for (var i = 0; i < segments.length; i++) {
-            current = current[segments[i]];
             if (!current) return null;
+            current = current[segments[i]];
         }
     } catch (err) {
         log.warn(location, 'is an invalid directory for sBase');
